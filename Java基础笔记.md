@@ -1235,4 +1235,139 @@ BFS 层序：1 → 2 → 3 → 4 → 5
 | 算法 | 逆波兰表达式：后缀表达式用栈求值 |
 | 方法 | `Character.isDigit()` / `isLetter()` |
 
+---
+
+**日期：2026年7月27日**
+
+---
+
+## 一、MySQL 基础
+
+### 1. 数据库概念
+
+| 术语 | 说明 |
+|------|------|
+| 数据库（Database） | 存放表的容器 |
+| 表（Table） | 数据以行和列的形式存储 |
+| 字段（Column） | 表的列 |
+| 记录（Row） | 表的一行数据 |
+
+### 2. 基本 SQL 语法
+
+```sql
+-- 建库
+CREATE DATABASE mydb;
+USE mydb;
+
+-- 建表
+CREATE TABLE student (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(20),
+    age INT
+);
+
+-- 增
+INSERT INTO student (name, age) VALUES ('张三', 18);
+
+-- 删
+DELETE FROM student WHERE id = 1;
+
+-- 改
+UPDATE student SET age = 20 WHERE name = '张三';
+
+-- 删表
+DROP TABLE student;
+```
+
+### 3. SELECT 查询
+
+```sql
+SELECT 列名 FROM 表名 WHERE 条件;
+```
+
+**常用关键字**：
+
+| 关键字 | 作用 | 示例 |
+|------|------|------|
+| `DISTINCT` | 去重 | `SELECT DISTINCT name FROM student;` |
+| `AS` | 别名（可省略） | `SELECT name AS 姓名 FROM student;` |
+| `DESC` | 显示表结构 | `DESC student;` |
+
+### 4. WHERE 运算符
+
+| 类型 | 运算符 |
+|------|------|
+| 比较 | `=` `>` `<` `>=` `<=` `<>` `!=` |
+| 逻辑 | `AND` `OR` `NOT` |
+| 范围 | `BETWEEN...AND` `IN` |
+| 模糊 | `LIKE` `%`（多个字符） `_`（单个字符） |
+| 空值 | `IS NULL` `IS NOT NULL` |
+
+### 5. NULL 值
+
+- `NULL` 参与运算，结果永远是 `NULL`
+- `IFNULL(列名, 默认值)` 把 NULL 替换成指定值
+
+### 6. 着重号
+
+- 反引号 `` ` `` 包裹表名、列名（和关键字冲突时用）
+- 单引号 `' '` 包裹字符串值
+
+### 7. 查询常数
+
+```sql
+SELECT 100, '张三', name FROM student;
+-- 每行都带上这些常数值
+```
+
+---
+
+## 二、今日算法
+
+### 49 字母异位词分组
+
+**方法**：HashMap + 排序
+
+| 步骤 | 操作 |
+|------|------|
+| 1 | 每个单词排序作为 key |
+| 2 | `map.containsKey(key)` 判断是否存在 |
+| 3 | 不存在 → `put(key, new ArrayList<>())` 建新列表 |
+| 4 | `map.get(key).add(s)` 添加单词 |
+| 5 | `map.values()` 返回所有分组 |
+
+**关键方法**：
+- `Arrays.sort(chars)` — 字符数组排序
+- `new String(chars)` — 字符数组转字符串
+- `map.values()` — 获取所有 value
+
+### 202 快乐数
+
+**方法**：HashSet 检测循环
+
+| 步骤 | 操作 |
+|------|------|
+| 1 | `getNext(n)` 计算各位数字平方和 |
+| 2 | HashSet 记录出现过的数 |
+| 3 | 重复出现 → `false`，变成 1 → `true` |
+
+**getNext 方法**：
+```
+n % 10 → 取最后一位
+n / 10 → 去掉最后一位
+d * d → 累加到 sum
+```
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| MySQL | 建库建表、增删改查、WHERE 运算符 |
+| MySQL | DISTINCT、AS 别名、NULL、着重号 |
+| 算法 | HashMap 分组（排序 key） |
+| 算法 | HashSet 检测循环 |
+```
+
 
