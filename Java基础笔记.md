@@ -1368,6 +1368,121 @@ d * d → 累加到 sum
 | MySQL | DISTINCT、AS 别名、NULL、着重号 |
 | 算法 | HashMap 分组（排序 key） |
 | 算法 | HashSet 检测循环 |
+
+---
+**日期：2026年7月28日**
+
+---
+
+## 一、MySQL 单表查询进阶
+
+### 1. ORDER BY 排序
+
+```sql
+SELECT * FROM student ORDER BY age ASC;   -- 升序（默认）
+SELECT * FROM student ORDER BY age DESC;  -- 降序
+```
+
+| 关键字 | 含义 |
+|------|------|
+| `ASC` | 升序，从小到大 |
+| `DESC` | 降序，从大到小 |
+
+### 2. 聚合函数
+
+| 函数 | 作用 |
+|------|------|
+| `COUNT(列)` | 统计行数 |
+| `SUM(列)` | 求和 |
+| `AVG(列)` | 平均值 |
+| `MAX(列)` | 最大值 |
+| `MIN(列)` | 最小值 |
+
+**注意**：聚合函数忽略 NULL 值，`COUNT(*)` 统计所有行。
+
+### 3. GROUP BY 分组
+
+```sql
+SELECT age, COUNT(*) FROM student GROUP BY age;
+```
+
+- 按指定列分组，通常配合聚合函数使用
+- SELECT 中的列要么是分组的列，要么是聚合函数
+
+### 4. HAVING 分组后过滤
+
+```sql
+SELECT age, COUNT(*) FROM student 
+GROUP BY age 
+HAVING COUNT(*) > 1;
+```
+
+| 关键字 | 作用 | 位置 |
+|------|------|------|
+| `WHERE` | 分组**前**过滤行 | FROM 之后 |
+| `HAVING` | 分组**后**过滤组 | GROUP BY 之后 |
+
+### 5. LIMIT 分页
+
+```sql
+SELECT * FROM student LIMIT 0, 10;  -- 从第0条开始，取10条
+SELECT * FROM student LIMIT 10;     -- 取前10条
+```
+
+### 6. 单行函数（简单了解）
+
+| 类型 | 函数 | 示例 |
+|------|------|------|
+| 字符串 | `CONCAT`、`LENGTH`、`SUBSTRING` | `CONCAT('a','b')` → `'ab'` |
+| 日期 | `NOW()`、`DATEDIFF` | `DATEDIFF('2026-07-01','2026-06-01')` → `30` |
+| 数值 | `ROUND` | `ROUND(3.1415, 2)` → `3.14` |
+
+### 7. SQL 语句执行顺序
+
+```
+FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
+```
+
+---
+
+## 二、今日算法
+
+| 题号 | 题目 | 方法 | 关键点 |
+|------|------|------|--------|
+| 217 | 存在重复元素 | HashSet | `add()` 返回 false 表示重复 |
+| 349 | 两个数组的交集 | 两个 HashSet | set1 查存在，resultSet 去重 |
+
+### 217 思路
+
+- 遍历数组，`set.add(num)` 失败说明元素已存在 → 有重复
+- 时间复杂度 O(n)
+
+### 349 思路
+
+```
+nums1 = [1, 2, 2, 1], nums2 = [2, 2]
+
+set1 = {1, 2}                    // 存 nums1
+遍历 nums2：
+  2 → set1 有 → resultSet = {2}
+  2 → set1 有，但 resultSet 已存在 → 自动去重
+
+result = [2]
+```
+
+- 两个 HashSet，O(n+m)
+- `resultSet.toArray(new int[0])` 转成 int[]
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| MySQL | ORDER BY、GROUP BY、HAVING、LIMIT |
+| MySQL | 聚合函数、WHERE vs HAVING |
+| MySQL | SQL 执行顺序 |
+| 算法 | HashSet 判断重复、两个 HashSet 求交集 |
 ```
 
 
