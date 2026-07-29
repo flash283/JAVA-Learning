@@ -1483,6 +1483,110 @@ result = [2]
 | MySQL | 聚合函数、WHERE vs HAVING |
 | MySQL | SQL 执行顺序 |
 | 算法 | HashSet 判断重复、两个 HashSet 求交集 |
+---
+
+**日期：2026年7月29日**
+
+---
+
+## 一、MySQL 多表查询
+
+### 1. 连接类型
+
+| 连接类型 | 关键字 | 结果 |
+|------|------|------|
+| 内连接 | `INNER JOIN` | 只返回两表匹配的行 |
+| 左外连接 | `LEFT JOIN` | 左表全部保留，右表匹配不上填 NULL |
+| 右外连接 | `RIGHT JOIN` | 右表全部保留，左表匹配不上填 NULL |
+
+### 2. 连接条件写法
+
+| 写法 | 示例 | 说明 |
+|------|------|------|
+| `ON` | `ON s.id = sc.stu_id` | 最通用，不同名列也能用 |
+| `USING` | `USING(id)` | 同名列时简化，结果只保留一列 |
+| `NATURAL JOIN` | 自动匹配所有同名列 | 不推荐，表结构变化易出错 |
+
+### 3. 等值连接 vs 非等值连接
+
+| 类型 | 示例 | 说明 |
+|------|------|------|
+| 等值连接 | `ON s.id = sc.stu_id` | 用 `=` 匹配 |
+| 非等值连接 | `ON score BETWEEN low AND high` | 用 `>` `<` `BETWEEN` 等 |
+
+### 4. 表的别名
+
+```sql
+SELECT s.name, sc.grade FROM student s INNER JOIN score sc ON s.id = sc.stu_id;
+```
+
+- `student s` → `s` 是表的别名
+- 简化列名书写，`s.name` 代替 `student.name`
+
+### 5. 三种连接对比示例
+
+```
+student: id=1(张三), id=2(李四), id=3(王五)
+score: stu_id=1(90), stu_id=3(85)
+
+INNER JOIN: 张三 90，王五 85（李四不出现）
+LEFT JOIN:  张三 90，李四 NULL，王五 85
+RIGHT JOIN: 张三 90，王五 85，stu_id=3无对应NULL（此处王五能匹配）
+```
+
+### 6. SQL 完整执行顺序
+
+```
+FROM → ON → JOIN → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
+```
+
+---
+
+## 二、今日算法
+
+| 题号 | 题目 | 方法 | 关键点 |
+|------|------|------|--------|
+| 290 | 单词规律 | 双 HashMap 双向映射 | `char → word` + `word → char` |
+| 205 | 同构字符串 | 双 HashMap 双向映射 | `s→t` + `t→s` |
+
+### 290 思路
+
+```
+pattern = "abba", s = "dog cat cat dog"
+
+char → word:  a→dog, b→cat
+word → char:  dog→a, cat→b
+
+单向不够，必须双向映射：
+  双向：保证每个 char 只映射一个 word，同时每个 word 只映射一个 char
+```
+
+**关键**：`split(" ")` 把字符串按空格拆成单词数组。
+
+### 205 思路
+
+```
+s = "egg", t = "add"
+
+s→t:  e→a, g→d
+t→s:  a→e, d→g
+
+检查：当前字符的映射是否和之前存的映射一致
+```
+
+**注意**：使用 `!=` 直接比较 `char`，不需要 `equals`。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| MySQL | INNER JOIN / LEFT JOIN / RIGHT JOIN |
+| MySQL | ON / USING / NATURAL JOIN |
+| MySQL | 表的别名、等值连接 vs 非等值连接 |
+| 算法 | 双 HashMap 双向映射模式 |
+| 方法 | `split(" ")` 字符串分割 |
 ```
 
 
