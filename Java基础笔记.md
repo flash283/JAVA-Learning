@@ -1587,6 +1587,138 @@ t→s:  a→e, d→g
 | MySQL | 表的别名、等值连接 vs 非等值连接 |
 | 算法 | 双 HashMap 双向映射模式 |
 | 方法 | `split(" ")` 字符串分割 |
+
+---
+**日期：2026年7月30日**
+
+---
+
+## 一、MySQL 进阶
+
+### 1. 子查询
+
+SELECT 里面嵌套 SELECT：
+
+```sql
+-- 查询比平均年龄大的学生
+SELECT * FROM student WHERE age > (SELECT AVG(age) FROM student);
 ```
 
+子查询先执行，结果交给外层查询。
+
+### 2. ALTER TABLE（修改表结构）
+
+```sql
+ALTER TABLE student ADD email VARCHAR(50);           -- 添加列
+ALTER TABLE student DROP COLUMN email;               -- 删除列
+ALTER TABLE student MODIFY name VARCHAR(50);         -- 修改列类型
+ALTER TABLE student ADD PRIMARY KEY (id);            -- 添加主键
+ALTER TABLE student ADD CONSTRAINT fk FOREIGN KEY (class_id) REFERENCES class(id);  -- 添加外键
+```
+
+### 3. 约束汇总
+
+| 约束 | 关键字 | 作用 |
+|------|------|------|
+| 主键 | `PRIMARY KEY` | 唯一标识，非空唯一 |
+| 外键 | `FOREIGN KEY ... REFERENCES` | 关联另一张表的主键 |
+| 唯一 | `UNIQUE` | 值不能重复，允许 NULL |
+| 非空 | `NOT NULL` | 必须有值 |
+| 默认 | `DEFAULT` | 不填时的默认值 |
+| 检查 | `CHECK` | 限制取值范围 |
+
+### 4. 列级约束 vs 表级约束
+
+| | 列级约束 | 表级约束 |
+|------|------|------|
+| 位置 | 跟在列定义后面 | 所有列定义之后 |
+| 单列 | ✅ | ✅ |
+| 多列（复合） | ❌ | ✅ 必须用表级 |
+
+```sql
+-- 表级约束（复合主键）
+CREATE TABLE selection (
+    stu_id INT,
+    course_id INT,
+    PRIMARY KEY (stu_id, course_id)
+);
+```
+
+### 5. 三种表关系
+
+| 关系 | 实现方式 | 举例 |
+|------|------|------|
+| 一对一 | 任一方加外键 | 用户 ↔ 用户详情 |
+| 一对多 | **多方**加外键 | 班级 ↔ 学生 |
+| 多对多 | 建**中间表** | 学生 ↔ 课程 |
+
+### 6. 数据类型
+
+| 类型 | 用途 | 注意 |
+|------|------|------|
+| `INT` | 整数 | |
+| `VARCHAR(n)` | 可变长字符串 | 用多少占多少 |
+| `CHAR(n)` | 定长字符串 | 固定长度 |
+| `DECIMAL(m,n)` | 精确小数 | 金额必用，不会丢精度 |
+| `FLOAT/DOUBLE` | 近似小数 | 科学计算，可能有误差 |
+
+### 7. DELETE vs TRUNCATE vs DROP
+
+| | DELETE | TRUNCATE | DROP |
+|------|------|------|------|
+| 删除内容 | 表中的行 | 表中所有数据 | 整张表 |
+| 表结构 | ✅ 保留 | ✅ 保留 | ❌ 全删 |
+| 可回滚 | ✅ | ❌ | ❌ |
+
+---
+
+## 二、数据结构：二叉树递归
+
+### 1. 递归模板
+
+```java
+返回值 方法(TreeNode root) {
+    if (root == null) return 基础值;       // 终止条件
+    左结果 = 方法(root.left);              // 递归左
+    右结果 = 方法(root.right);             // 递归右
+    return 处理(左结果, 右结果);           // 合并
+}
+```
+
+**递归不要靠"想明白"，靠"抄模板填空"。**
+
+### 2. 今日题目
+
+| 题号 | 题目 | 递归公式 |
+|------|------|------|
+| 104 | 二叉树最大深度 | `max(左深度, 右深度) + 1` |
+| 101 | 对称二叉树 | `左.left==右.right && 左.right==右.left` |
+
+### 104 思路
+
+```
+深度 = max(左子树深度, 右子树深度) + 1
+空节点深度 = 0
+```
+
+### 101 思路
+
+```
+两棵树镜像 = 值相等 且 p左==q右 且 p右==q左
+都为空 → 对称
+一个为空 → 不对称
+值不等 → 不对称
+```
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| MySQL | 子查询、ALTER TABLE、约束汇总 |
+| MySQL | 表关系（一对一/一对多/多对多） |
+| MySQL | 数据类型（VARCHAR vs CHAR, DECIMAL vs FLOAT） |
+| 数据结构 | 递归模板：终止条件 → 递归 → 合并 |
+| 算法 | 二叉树递归：最大深度、对称判断 |
 
