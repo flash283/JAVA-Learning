@@ -1722,3 +1722,126 @@ CREATE TABLE selection (
 | 数据结构 | 递归模板：终止条件 → 递归 → 合并 |
 | 算法 | 二叉树递归：最大深度、对称判断 |
 
+---
+
+**日期：2026年7月31日**
+
+---
+
+## 一、MySQL 练习总结
+
+### 1. 基本查询
+
+```sql
+SELECT name, age FROM student;                    -- 查指定列
+SELECT * FROM student WHERE age > 20;             -- 条件查询
+SELECT * FROM student ORDER BY age DESC;          -- 降序排列
+```
+
+### 2. 分组与过滤
+
+```sql
+SELECT c.name, COUNT(s.id) FROM class c
+JOIN student s ON c.id = s.class_id
+GROUP BY c.name;                                  -- 分组统计
+
+SELECT c.name, COUNT(s.id) AS num FROM class c
+JOIN student s ON c.id = s.class_id
+GROUP BY c.name HAVING num >= 2;                  -- 分组后过滤
+```
+
+| 关键字 | 作用 | 位置 |
+|------|------|------|
+| `WHERE` | 分组**前**过滤行 | FROM 之后 |
+| `HAVING` | 分组**后**过滤组 | GROUP BY 之后 |
+
+### 3. 多表连接
+
+```sql
+-- 内连接：两表都匹配的行
+SELECT s.name, c.name FROM student s
+INNER JOIN class c ON s.class_id = c.id;
+
+-- 左连接：左表全保留
+SELECT s.name, sc.grade FROM student s
+LEFT JOIN score sc ON s.id = sc.stu_id
+WHERE sc.grade IS NULL;                           -- 查没成绩的学生
+```
+
+`ON` 后面加两表的关联条件，通常是 `外键 = 主键`。
+
+### 4. 子查询
+
+```sql
+SELECT name, age FROM student
+WHERE age > (SELECT AVG(age) FROM student);       -- 比平均年龄大
+```
+
+### 5. 分页
+
+```sql
+SELECT * FROM student LIMIT 0, 5;   -- 第1页，每页5条
+SELECT * FROM student LIMIT 5, 5;   -- 第2页
+```
+
+### 6. 命令行翻页
+
+```bash
+mysql> pager less    # 开启翻页（上下箭头翻，q退出）
+mysql> nopager       # 恢复默认
+```
+
+---
+
+## 二、二叉树算法
+
+### 226 翻转二叉树
+
+**思路**：交换每个节点的左右子树，递归处理。
+
+```java
+public TreeNode invertTree(TreeNode root) {
+    if (root == null) return null;         // 终止条件
+    TreeNode temp = root.left;
+    root.left = root.right;
+    root.right = temp;                     // 交换
+    invertTree(root.left);
+    invertTree(root.right);                // 递归
+    return root;
+}
+```
+
+| 遍历顺序 | 做法 | 效果 |
+|------|------|------|
+| 前序 | 交换 → 递归 | 从上往下翻 |
+| 后序 | 递归 → 交换 | 从下往上翻 |
+
+结果完全相同。
+
+### 112 路径总和
+
+**思路**：每次减去当前节点值，到叶子判断是否刚好减完。
+
+```java
+public boolean hasPathSum(TreeNode root, int targetSum) {
+    if (root == null) return false;
+    if (root.left == null && root.right == null)   // 叶子节点
+        return root.val == targetSum;
+    return hasPathSum(root.left, targetSum - root.val)
+        || hasPathSum(root.right, targetSum - root.val);
+}
+```
+
+**关键**：`targetSum - root.val` 往下传递，到叶子时判断剩余值是否等于叶子值。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| MySQL | 基本查询、GROUP BY + HAVING、JOIN、子查询、LIMIT |
+| MySQL | ON 条件、命令行翻页 |
+| 算法 | 翻转二叉树（前序/后序） |
+| 算法 | 路径总和（减法思路） |
+```
