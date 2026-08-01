@@ -1844,4 +1844,102 @@ public boolean hasPathSum(TreeNode root, int targetSum) {
 | MySQL | ON 条件、命令行翻页 |
 | 算法 | 翻转二叉树（前序/后序） |
 | 算法 | 路径总和（减法思路） |
+---
+
+**日期：2026年8月1日**
+
+---
+
+## 一、图书管理系统
+
+### 1. 项目结构
+
 ```
+├── BookManager.BookManager.Book.java          // 实体类
+├── BookManager.BookManager.java   // 管理类（增删改查）
+├── BookManager.Main.java          // 主界面（菜单交互）
+```
+
+### 2. BookManager.BookManager.Book 实体类
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| id | int | 图书编号 |
+| title | String | 书名 |
+| author | String | 作者 |
+| isbn | String | ISBN号 |
+| isBorrowed | boolean | 是否已借出 |
+
+### 3. BookManager.BookManager 功能
+
+| 方法 | 功能 |
+|------|------|
+| `addBook(BookManager.BookManager.Book)` | 添加图书 |
+| `deleteBook(int id)` | 按编号删除 |
+| `updateBook(int id, BookManager.BookManager.Book)` | 修改图书信息 |
+| `queryAll()` | 查看所有图书 |
+| `queryById(int id)` | 按编号查询 |
+| `queryByTitle(String)` | 按书名模糊查询 |
+| `borrowBook(int id)` | 借书 |
+| `returnBook(int id)` | 还书 |
+| `generateId()` | 自动生成编号 |
+
+### 4. 关键细节
+
+| 问题 | 解决 |
+|------|------|
+| 遍历时删除 | 用普通 for 按下标，不能用增强 for |
+| 修改列表元素 | `list.set(i, newBook)` 直接替换 |
+| 字符串比较 | 用 `equals` / `contains`，不能用 `==` |
+| `nextInt()` 后接 `nextLine()` | 加一行 `scan.nextLine()` 吃掉换行符 |
+| 按书名查询返回 | `List<BookManager.BookManager.Book>`，因为可能有多本同名书 |
+
+### 5. 后续改进
+
+- 数据存到 MySQL 数据库（8月11日）
+- 用 Spring Boot 改造成 Web 接口（8月中旬）
+
+---
+
+## 二、今日算法
+
+### 102 二叉树的层序遍历（BFS）
+
+**方法**：队列
+
+| 步骤 | 操作 |
+|------|------|
+| 1 | 根节点入队 |
+| 2 | 记下当前队列大小 `size`（当前层节点数） |
+| 3 | for 循环 `size` 次，弹出节点，左右子节点入队 |
+| 4 | 当前层列表加入结果，重复直到队列空 |
+
+- `queue.offer()` 入队，`queue.poll()` 出队
+- BFS 天然适合层序，DFS（递归）也可以但需要记录深度
+
+### 100 相同的树
+
+**方法**：递归
+
+| 情况 | 返回值 |
+|------|------|
+| 两个都 null | `true` |
+| 一个 null | `false` |
+| 值不等 | `false` |
+| 值相等 | `左相同 && 右相同` |
+
+**关键**：最后用 `&&` 不是 `||`，左右子树都必须相同。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| 项目 | 控制台图书管理系统完整实现 |
+| Java | 增强 for 不能删元素、字符串不能用 `==`、`nextInt` 后要 `nextLine` |
+| 算法 | BFS 层序遍历（队列） |
+| 算法 | 递归判断相同树 |
+```
+
+---
