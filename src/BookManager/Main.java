@@ -1,5 +1,6 @@
 package BookManager;
 
+import java.io.*;
 import java.util.List;
 import java.util.Scanner;
 
@@ -7,6 +8,31 @@ public class Main {
     public static void main(String[] args){
         Scanner scan=new Scanner(System.in);
         BookManager manager=new BookManager();
+        String path="d:\\books.txt";
+
+        File file=new File(path);
+        if(file.exists()) {
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(path));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(",");
+                    Book b2 = new Book();
+                    b2.setId(Integer.parseInt(parts[0]));
+                    b2.setTitle(parts[1]);
+                    b2.setAuthor(parts[2]);
+                    b2.setIsbn(parts[3]);
+                    b2.setBorrowed(Boolean.parseBoolean(parts[4]));
+                    manager.addBook(b2);
+                }
+                reader.close();
+            } catch (IOException e) {
+                System.out.println("加载数据失败");
+            }
+        }else {
+            System.out.println("首次运行，无历史数据");
+        }
+
 
         while (true){
             System.out.println("=== 图书管理系统 ===");
@@ -131,10 +157,22 @@ public class Main {
                          System.out.println("还书失败");
                      }
                      break;
+
                  case 0:
+                     try {
+                         BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+                         for (Book b1 : manager.queryAll()) {
+                             writer.write(b1.getId() + "," + b1.getTitle() + ","
+                                     + b1.getAuthor() + "," + b1.getIsbn() + "," + b1.isBorrowed());
+                             writer.newLine();
+                         }
+                         writer.close();
+                     } catch (IOException e) {
+                         System.out.println("保存失败");
+                     }
                      System.out.println("谢谢使用，再见！");
                      scan.close();
-                     return;       // 或 System.exit(0)
+                     return;      // 或 System.exit(0)
              }
 
         }

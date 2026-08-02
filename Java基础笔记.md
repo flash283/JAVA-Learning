@@ -1940,6 +1940,120 @@ public boolean hasPathSum(TreeNode root, int targetSum) {
 | Java | 增强 for 不能删元素、字符串不能用 `==`、`nextInt` 后要 `nextLine` |
 | 算法 | BFS 层序遍历（队列） |
 | 算法 | 递归判断相同树 |
+
+
+---
+
+
+**日期：2026年8月2日**
+
+---
+
+## 一、图书管理系统：文件存储
+
+### 1. 文件格式
+
+每行一本书，字段用逗号分隔：
+
 ```
+1,数据结构与算法,李明,978-7-302-12345-1,false
+2,计算机网络,谢希仁,978-7-302-23456-2,true
+```
+
+### 2. 启动时加载
+
+```java
+File file = new File(path);
+if (file.exists()) {
+    BufferedReader reader = new BufferedReader(new FileReader(path));
+    String line;
+    while ((line = reader.readLine()) != null) {
+        String[] parts = line.split(",");
+        Book b = new Book();
+        b.setId(Integer.parseInt(parts[0]));
+        b.setTitle(parts[1]);
+        b.setAuthor(parts[2]);
+        b.setIsbn(parts[3]);
+        b.setBorrowed(Boolean.parseBoolean(parts[4]));
+        manager.addBook(b);
+    }
+    reader.close();
+}
+```
+
+### 3. 退出时保存
+
+```java
+BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+for (Book b : manager.queryAll()) {
+    writer.write(b.getId() + "," + b.getTitle() + "," 
+        + b.getAuthor() + "," + b.getIsbn() + "," + b.isBorrowed());
+    writer.newLine();
+}
+writer.close();
+```
+
+### 4. 关键方法
+
+| 方法 | 作用 |
+|------|------|
+| `line.split(",")` | 按逗号分隔成字符串数组 |
+| `Integer.parseInt(s)` | 字符串转 int |
+| `Boolean.parseBoolean(s)` | 字符串转 boolean |
+| `file.exists()` | 判断文件是否存在 |
+
+### 5. 为什么需要逗号分隔
+
+没有分隔符无法把 `"1Java入门张三"` 拆成 id、title、author。逗号作为分隔符，`split` 还原。
+
+---
+
+## 二、今日算法
+
+### 200 岛屿数量
+
+**方法**：DFS 或 BFS
+
+**思路**：遍历网格，遇到 '1' 就计数 +1，然后把和它相连的所有 '1' 标记为 '0'。
+
+| 方法 | 实现 | 空间 |
+|------|------|------|
+| DFS | 递归，向四个方向深入 | O(h) |
+| BFS | 队列，逐层扩散 | O(n) |
+
+**方向数组**：
+
+```java
+int[][] dirs = {{1,0}, {-1,0}, {0,1}, {0,-1}};
+//              下      上      右      左
+```
+
+`dir[0]` 是行偏移（上下），`dir[1]` 是列偏移（左右）。
+
+**关键**：入队/进入递归后立刻标记为 '0'，防止重复访问。
+
+### 111 二叉树的最小深度
+
+**方法**：递归
+
+| 情况 | 做法 |
+|------|------|
+| 叶子节点 | 深度 = 1 |
+| 只有一个子节点 | 走有子节点那边 |
+| 两个都有 | 取较小 + 1 |
+
+**注意**：不能简单取 `min(左, 右)`，因为 null 子节点的深度是 0，会错误地把它当成最短路径。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| 项目 | 文件存储：启动加载 + 退出保存 |
+| Java | `split`、`parseInt`、`parseBoolean`、`File.exists` |
+| 算法 | 岛屿数量：DFS/BFS + 方向数组 |
+| 算法 | 最小深度：注意只有一个子节点的情况 |
+
 
 ---
