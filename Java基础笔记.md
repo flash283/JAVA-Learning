@@ -2057,3 +2057,106 @@ int[][] dirs = {{1,0}, {-1,0}, {0,1}, {0,-1}};
 
 
 ---
+
+
+**日期：2026年8月3日**
+
+---
+
+## 一、图书管理系统收尾
+
+### 1. 编号自动递增修复
+
+**问题**：每次启动程序 `nextId` 从 1 开始，新书编号和已有数据冲突。
+
+**解决**：启动时读取文件中最大 id，设 `nextId = maxId + 1`。
+
+```java
+// BookManager 里加方法
+public void setNextId(int maxId) {
+    this.nextId = maxId + 1;
+}
+
+// Main 加载文件时
+int maxId = 0;
+while ((line = reader.readLine()) != null) {
+    int id = Integer.parseInt(parts[0]);
+    if (id > maxId) maxId = id;
+    // ... 创建 Book
+}
+manager.setNextId(maxId);
+```
+
+### 2. 格式对齐
+
+控制台查询显示用 `System.out.printf` 格式化：
+
+| 占位符 | 含义 | 示例 |
+|------|------|------|
+| `%-6d` | 左对齐，占6位，整数 | `%-6d` |
+| `%-22s` | 左对齐，占22位，字符串 | `%-22s` |
+| `%n` | 换行 | |
+
+中文一个字符约占两个英文字符宽度，宽度按最长内容估算。
+
+---
+
+## 二、今日算法
+
+### 199 二叉树的右视图
+
+**方法**：BFS 层序遍历，取每层最后一个节点。
+
+```java
+if (i == size - 1) {
+    list.add(node.val);
+}
+```
+
+**关键**：入队时用 `node.left` / `node.right`，不是 `root.left`，否则死循环。
+
+### 637 二叉树的层平均值
+
+**方法**：BFS 层序遍历，每层求和除以节点数。
+
+```java
+double sum = 0;
+for (int i = 0; i < size; i++) {
+    TreeNode node = queue.poll();
+    sum += node.val;
+}
+list.add(sum / size);
+```
+
+**关键**：`sum` 声明为 `double`，整数除法自动转小数，不需要额外转换。
+
+### BFS 层序遍历模板
+
+```java
+Queue<TreeNode> queue = new LinkedList<>();
+queue.offer(root);
+while (!queue.isEmpty()) {
+    int size = queue.size();          // 当前层节点数
+    for (int i = 0; i < size; i++) {  // 处理当前层
+        TreeNode node = queue.poll();
+        // 处理 node ...
+        if (node.left != null) queue.offer(node.left);
+        if (node.right != null) queue.offer(node.right);
+    }
+    // 当前层处理完毕
+}
+```
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| 项目 | 编号自增修复、printf 格式对齐 |
+| BFS | 层序遍历模板 |
+| 算法 | 右视图 = 每层最后一个 |
+| 算法 | 层平均值 = 每层 sum / size |
+| 坑 | `node.left` 写成 `root.left` 会死循环 |
+| 队列方法 | 刷题统一用 `offer` / `poll` |
+---

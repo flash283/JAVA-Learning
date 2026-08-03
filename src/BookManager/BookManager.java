@@ -7,6 +7,9 @@ public class BookManager {
     private ArrayList<Book> bookList;
     private int nextId = 1;
 
+    public void setNextId(int maxId) {
+        this.nextId = maxId + 1;
+    }
     public int generateId() {
         return nextId++;
     }

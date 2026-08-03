@@ -11,14 +11,17 @@ public class Main {
         String path="d:\\books.txt";
 
         File file=new File(path);
-        if(file.exists()) {
+        int maxId = 0;
+        if (file.exists()) {
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(path));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String[] parts = line.split(",");
+                    int id = Integer.parseInt(parts[0]);
+                    if (id > maxId) maxId = id;            // 记录最大 id
                     Book b2 = new Book();
-                    b2.setId(Integer.parseInt(parts[0]));
+                    b2.setId(id);
                     b2.setTitle(parts[1]);
                     b2.setAuthor(parts[2]);
                     b2.setIsbn(parts[3]);
@@ -26,10 +29,11 @@ public class Main {
                     manager.addBook(b2);
                 }
                 reader.close();
+                manager.setNextId(maxId);                   // 设置 nextId 从 maxId+1 开始
             } catch (IOException e) {
                 System.out.println("加载数据失败");
             }
-        }else {
+        } else {
             System.out.println("首次运行，无历史数据");
         }
 
@@ -65,15 +69,18 @@ public class Main {
                      if (list.isEmpty()) {
                          System.out.println("暂无图书");
                      } else {
+                         System.out.printf("%-6s %-22s %-14s %-28s %-6s%n", "编号", "书名", "作者", "ISBN", "状态");
+                         System.out.println("----------------------------------------------------------------------------");
                          for (Book b : list) {
-                             String status = b.isBorrowed() ? "已借出" : "在馆";
-                             System.out.println("编号：" + b.getId() +
-                                     " 书名：" + b.getTitle() +
-                                     " 作者：" + b.getAuthor() +
-                                     " ISBN：" + b.getIsbn() +
-                                     " 状态：" + status);
+                             System.out.printf("%-6d %-22s %-14s %-28s %-6s%n",
+                                     b.getId(),
+                                     b.getTitle(),
+                                     b.getAuthor(),
+                                     b.getIsbn(),
+                                     b.isBorrowed() ? "已借出" : "在馆");
                          }
-                     }
+                         }
+
                      break;
                  case 3:
                      System.out.println("请输入图书编号:");
@@ -92,18 +99,21 @@ public class Main {
                      break;
 
                  case 4:
-                    System.out.println("请输入书名关键字");
-                    String s=scan.nextLine();
-                    List<Book> list1 =manager.queryByTitle(s);
+                     System.out.println("请输入书名关键字");
+                     String s = scan.nextLine();
+                     List<Book> list1 = manager.queryByTitle(s);
                      if (list1.isEmpty()) {
                          System.out.println("暂无图书");
                      } else {
+                         System.out.printf("%-6s %-22s %-14s %-28s %-6s%n", "编号", "书名", "作者", "ISBN", "状态");
+                         System.out.println("---------------------------------------------------------------");
                          for (Book b1 : list1) {
-                             System.out.println("编号：" + b1.getId() +
-                                     " 书名：" + b1.getTitle() +
-                                     " 作者：" + b1.getAuthor() +
-                                     " ISBN：" + b1.getIsbn() +
-                                     " 状态：" + (b1.isBorrowed() ? "已借出" : "在馆"));
+                             System.out.printf("%-6d %-22s %-14s %-28s %-6s%n",
+                                     b1.getId(),
+                                     b1.getTitle(),
+                                     b1.getAuthor(),
+                                     b1.getIsbn(),
+                                     b1.isBorrowed() ? "已借出" : "在馆");
                          }
                      }
                      break;
