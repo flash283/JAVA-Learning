@@ -2160,3 +2160,253 @@ while (!queue.isEmpty()) {
 | 坑 | `node.left` 写成 `root.left` 会死循环 |
 | 队列方法 | 刷题统一用 `offer` / `poll` |
 ---
+
+**日期：2026年8月4日**
+
+---
+
+## 一、反转链表（LeetCode 206）
+
+### 核心：三指针法
+
+```java
+ListNode prev = null;
+ListNode curr = head;
+while (curr != null) {
+    ListNode next = curr.next;  // 1. 先记住下一个
+    curr.next = prev;           // 2. 反转指向
+    prev = curr;                // 3. prev 后移
+    curr = next;                // 4. curr 后移
+}
+return prev;
+```
+
+### 关键顺序不能乱
+
+| 步骤 | 操作 | 为什么 |
+|------|------|------|
+| ① | `next = curr.next` | 必须提前存，否则改了指向就找不到了 |
+| ② | `curr.next = prev` | 反转当前节点 |
+| ③ | `prev = curr` | prev 往后移 |
+| ④ | `curr = next` | curr 往后移 |
+
+### 常见错误
+
+- 先移指针再改指向 → 丢失后续节点，形成环
+- 忘记返回 `prev`（新头），错返回 `curr`（null）或 `head`（旧头）
+
+---
+
+## 二、二分查找（LeetCode 704）
+
+### 标准模板
+
+```java
+int left = 0;
+int right = nums.length - 1;
+while (left <= right) {
+    int mid = (left + right) / 2;
+    if (nums[mid] == target) return mid;
+    if (nums[mid] < target) left = mid + 1;
+    else right = mid - 1;
+}
+return -1;
+```
+
+### 关键细节
+
+| 要点 | 说明 |
+|------|------|
+| `left <= right` | 区间只剩一个元素也要判断 |
+| `mid` 在循环内计算 | 每次循环重新算 |
+| `left = mid + 1` | 跳过 mid，否则可能死循环 |
+| `right = mid - 1` | 跳过 mid |
+
+---
+
+## 三、层序遍历（LeetCode 102）复习
+
+### BFS 模板
+
+```java
+Queue<TreeNode> queue = new LinkedList<>();
+queue.offer(root);
+while (!queue.isEmpty()) {
+    int size = queue.size();
+    for (int i = 0; i < size; i++) {
+        TreeNode node = queue.poll();
+        // 处理 node
+        if (node.left != null) queue.offer(node.left);
+        if (node.right != null) queue.offer(node.right);
+    }
+}
+```
+
+### 常见错误
+
+- `root.left` 写成死循环 → 应该用 `node.left`
+- `root == null` 返回 `null` → 应该返回空列表 `result`
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| 链表 | 反转链表三指针法，顺序不能乱 |
+| 二分 | `left<=right`，`mid` 在循环内 |
+| BFS | 层序遍历模板，`node.left` 不是 `root.left`
+---
+```markdown
+# JDBC + 项目改造 + 算法笔记
+
+**日期：2026年8月7日**
+
+---
+
+## 一、JDBC 基础
+
+### 1. JDBC 是什么
+
+Java 连接数据库的标准接口，用 Java 代码操作 MySQL。
+
+### 2. 连接数据库步骤
+
+| 步骤 | 代码 |
+|------|------|
+| 加载驱动 | `Class.forName("com.mysql.cj.jdbc.Driver")`（8.0+ 可省略） |
+| 获取连接 | `DriverManager.getConnection(url, user, password)` |
+| 执行 SQL | `PreparedStatement` |
+| 处理结果 | `ResultSet` |
+| 关闭连接 | `close()` 或 try-with-resources 自动关闭 |
+
+### 3. 常用代码模板
+
+```java
+// 增删改
+String sql = "INSERT INTO books (title, author) VALUES (?, ?)";
+try (Connection conn = getConnection();
+     PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    pstmt.setString(1, "Java入门");
+    pstmt.setString(2, "张三");
+    int rows = pstmt.executeUpdate();  // 返回受影响行数
+}
+
+// 查询
+String sql = "SELECT * FROM books WHERE id = ?";
+try (Connection conn = getConnection();
+     PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    pstmt.setInt(1, 1);
+    ResultSet rs = pstmt.executeQuery();
+    while (rs.next()) {
+        String title = rs.getString("title");
+    }
+}
+```
+
+### 4. executeUpdate vs executeQuery
+
+| 方法 | 用于 | 返回值 |
+|------|------|------|
+| `executeUpdate()` | INSERT、UPDATE、DELETE | `int`，受影响行数 |
+| `executeQuery()` | SELECT | `ResultSet`，结果集 |
+
+### 5. try-with-resources
+
+```java
+try (Connection conn = getConnection();
+     PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    // 执行 SQL
+}  // 自动调用 close()，不用手动关
+```
+
+### 6. 添加 MySQL 驱动
+
+1. 下载 `mysql-connector-j-8.0.33.jar`
+2. 放项目 `lib` 文件夹
+3. 右键 jar → 添加为库
+
+---
+
+## 二、图书管理系统改造
+
+### 改造内容
+
+| 原来 | 数据库版 |
+|------|------|
+| `ArrayList<Book>` 存数据 | MySQL `books` 表 |
+| 文件读写 | JDBC 操作数据库 |
+| `list.add(book)` | `INSERT INTO books` |
+| `list.remove(i)` | `DELETE FROM books WHERE id=?` |
+| `list.set(i, book)` | `UPDATE books SET ... WHERE id=?` |
+| `list.get(i)` | `SELECT * FROM books WHERE id=?` |
+
+### 改进点
+
+- `Main` 类无需改动，接口不变，只换内部实现
+- 修改功能支持**部分修改**，回车保留原值
+- 删除文件读写代码，纯数据库版
+
+### 关键 SQL
+
+```sql
+-- 模糊查询
+SELECT * FROM books WHERE title LIKE '%关键字%'
+
+-- 借书（防止重复借出）
+UPDATE books SET is_borrowed = TRUE WHERE id = ? AND is_borrowed = FALSE
+
+-- 还书（防止重复归还）
+UPDATE books SET is_borrowed = FALSE WHERE id = ? AND is_borrowed = TRUE
+```
+
+---
+
+## 三、今日算法
+
+### 141 环形链表（是否有环）
+
+**方法**：快慢指针
+
+```java
+ListNode slow = head, fast = head;
+while (fast != null && fast.next != null) {
+    slow = slow.next;
+    fast = fast.next.next;
+    if (slow == fast) return true;  // 相遇 → 有环
+}
+return false;  // fast 遇到 null → 无环
+```
+
+### 142 环形链表 II（找环入口）
+
+**方法一：快慢指针（O(1)空间）**
+
+快慢指针相遇后，slow 回到头，两个都走一步，再次相遇 = 环入口。
+
+**方法二：HashSet（O(n)空间，简单直观）**
+
+```java
+HashSet<ListNode> set = new HashSet<>();
+ListNode p = head;
+while (p != null) {
+    if (set.contains(p)) return p;  // 第一次重复 = 环入口
+    set.add(p);
+    p = p.next;
+}
+return null;
+```
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| JDBC | 连接数据库、PreparedStatement、executeUpdate/Query |
+| 项目 | 图书管理系统改造为数据库版 |
+| Java | try-with-resources 自动关闭 |
+| 算法 | 快慢指针判环、找环入口 |
+| 算法 | HashSet 找环入口（简单版） |
+```
+---
