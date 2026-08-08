@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/src/BookManager/BookDAO.java" value="2b0f188c-d891-488b-b392-6205aa4474a7" />
     <file url="file://$PROJECT_DIR$/src/BookManager/BookManager.java" value="2b0f188c-d891-488b-b392-6205aa4474a7" />
   </component>
 </project>

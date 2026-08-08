@@ -2408,5 +2408,114 @@ return null;
 | Java | try-with-resources 自动关闭 |
 | 算法 | 快慢指针判环、找环入口 |
 | 算法 | HashSet 找环入口（简单版） |
+
+---
+```markdown
+# JDBC 进阶 + 算法笔记
+
+**日期：2026年8月8日**
+
+---
+
+## 一、JDBC 进阶
+
+### 1. DAO 设计模式
+
+把数据库操作单独封装到 DAO 类中：
+
 ```
+Main（界面） → BookManager（业务） → BookDAO（数据库操作）
+```
+
+| 层 | 职责 |
+|------|------|
+| Book.java | 实体，存数据 |
+| BookDAO.java | 数据库增删改查（SQL 都在这里） |
+| BookManager.java | 业务逻辑，调用 DAO |
+| Main.java | 用户交互 |
+
+**好处**：换数据库只改 DAO，业务代码不变。
+
+### 2. SQL 注入
+
+用户输入被当成 SQL 代码执行的安全漏洞。
+
+- **危险**：`"SELECT * FROM user WHERE name = '" + name + "'"` 拼接字符串
+- **安全**：`PreparedStatement` + `?` 占位符，自动转义
+
+### 3. 事务
+
+多条 SQL 要么全成功，要么全失败：
+
+```java
+conn.setAutoCommit(false);   // 开启事务
+try {
+    // 多条 SQL 用同一个 conn
+    conn.commit();           // 全部成功
+} catch (SQLException e) {
+    conn.rollback();         // 有失败，回滚到事务开始前
+}
+```
+
+**应用场景**：转账、下单、库存扣减、用户注册等多步操作。
+
+**当前系统不需要事务**：每次操作只一条 SQL，各自开关连接即可。
+
+### 4. 资源关闭
+
+| 方式 | 做法 |
+|------|------|
+| 手动关闭 | `finally` 里从后往前关：`rs` → `pstmt` → `conn` |
+| try-with-resources | `try(conn; pstmt; rs) {}` 自动关闭 |
+
+**你一直用的 try-with-resources 是规范写法**，不需要手动关。
+
+### 5. ResultSet 与事务结合
+
+查询和后续增删改使用**同一个连接**，共享事务：
+
+```java
+conn.setAutoCommit(false);
+// 1. 查询（同 conn）
+// 2. 根据结果增删改（同 conn）
+conn.commit();  // 或 rollback()
+```
+
+单条 SQL 各自开关连接即可，多条 SQL 需要共享连接。
+
+### 6. AUTO_INCREMENT
+
+删除数据后自增 ID 不回退，是数据库正常行为，不用处理。
+
+---
+
+## 二、今日算法
+
+### 110 平衡二叉树
+
+**思路**：递归求深度，深度差 > 1 返回 -1。
+
+- `Math.abs(left - right) > 1` → 不平衡
+- 用 -1 快速传递，避免无效计算
+
+### 33 搜索旋转排序数组
+
+**思路**：二分查找变形，每次判断哪一半有序。
+
+- 从中间切开，至少一半有序
+- 判断 target 在不在这半，缩小范围
+- 时间复杂度 O(log n)，空间 O(1)
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| JDBC | DAO 分层、SQL 注入防护、事务 |
+| JDBC | 资源关闭、ResultSet 与事务 |
+| 算法 | 平衡二叉树（深度差 -1 标记） |
+| 算法 | 旋转数组二分（判断哪一半有序） |
+```
+
 ---
