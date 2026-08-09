@@ -2516,6 +2516,130 @@ conn.commit();  // 或 rollback()
 | JDBC | 资源关闭、ResultSet 与事务 |
 | 算法 | 平衡二叉树（深度差 -1 标记） |
 | 算法 | 旋转数组二分（判断哪一半有序） |
-```
+---
+```markdown
+# Maven 入门 + 算法笔记
+
+**日期：2026年8月9日**
 
 ---
+
+## 一、Maven 入门
+
+### 1. Maven 是什么
+
+项目构建和依赖管理工具，自动下载 jar 包、编译、打包。不用手动放 `lib` 文件夹，在 `pom.xml` 写几行，Maven 自动从中央仓库下载。
+
+### 2. pom.xml
+
+Maven 项目的核心配置文件：
+
+```xml
+<groupId>com.example</groupId>          <!-- 组织名 -->
+<artifactId>bookmanager</artifactId>    <!-- 项目名 -->
+<version>1.0-SNAPSHOT</version>        <!-- 版本号 -->
+
+<dependencies>
+    <dependency>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
+        <version>8.0.33</version>       <!-- 去 mvnrepository.com 查 -->
+    </dependency>
+</dependencies>
+```
+
+`groupId` + `artifactId` + `version` 三者唯一定位一个 jar 包，这些值由发布者定义，不是自己编的。
+
+### 3. 项目结构
+
+```
+bookmanager-maven/
+├── src/main/java/      ← 放 Java 代码
+├── src/test/java/      ← 放测试代码
+└── pom.xml             ← Maven 配置
+```
+
+### 4. 依赖范围（scope）
+
+| scope | 含义 |
+|------|------|
+| `compile`（默认） | 编译、运行、打包都可用 |
+| `provided` | 编译运行可用，打包不包括 |
+| `runtime` | 编译不需要，运行时需要 |
+| `test` | 只在测试时可用 |
+
+MySQL 驱动用默认 `compile`，不用写 `scope`。
+
+### 5. 图书管理系统 Maven 化
+
+- 删掉 `lib` 文件夹
+- 在 `pom.xml` 加 MySQL 依赖
+- 右键 `pom.xml` → `Maven` → `重新加载项目`
+
+### 6. 相关概念
+
+| 术语 | 说明 |
+|------|------|
+| jar 包 | Java 程序压缩包 |
+| XML | 存数据的标记语言，Maven 配置用 |
+| GBK / UTF-8 | 字符编码，UTF-8 支持全球语言，推荐 |
+| Archetype | Maven 项目模板 |
+
+---
+
+## 二、今日算法
+
+### 415 字符串相加
+
+**方法**：模拟竖式加法，从个位开始逐位加，处理进位。
+
+```java
+StringBuilder sb = new StringBuilder();
+int i = num1.length() - 1, j = num2.length() - 1, carry = 0;
+while (i >= 0 || j >= 0 || carry != 0) {
+    int a = i >= 0 ? num1.charAt(i) - '0' : 0;
+    int b = j >= 0 ? num2.charAt(j) - '0' : 0;
+    int sum = a + b + carry;
+    sb.append(sum % 10);
+    carry = sum / 10;
+    i--; j--;
+}
+return sb.reverse().toString();
+```
+
+| 关键点 | 说明 |
+|------|------|
+| `charAt(i) - '0'` | 字符转数字 |
+| `carry != 0` | 最高位有进位时要继续循环 |
+| `StringBuilder` | 可变字符串，`append` + `reverse` |
+
+### 1047 删除相邻重复项
+
+**方法**：用 `StringBuilder` 当栈，遍历字符，和栈顶相同就弹出，不同就压入。
+
+```java
+StringBuilder sb = new StringBuilder();
+for (char c : s.toCharArray()) {
+    if (sb.length() > 0 && sb.charAt(sb.length() - 1) == c) {
+        sb.deleteCharAt(sb.length() - 1);
+    } else {
+        sb.append(c);
+    }
+}
+return sb.toString();
+```
+
+**为什么不用双重循环**：时间复杂度 O(n²)，栈解法 O(n) 一次过。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Maven | pom.xml、依赖管理、项目结构 |
+| 项目 | 图书管理系统 Maven 化 |
+| 算法 | 字符串相加（模拟加法） |
+| 算法 | 栈消消乐（删除相邻重复项） |
+---
+
