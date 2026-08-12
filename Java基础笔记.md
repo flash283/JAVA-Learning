@@ -2769,3 +2769,257 @@ public int maxDepth(Node root) {
 | 算法 | N叉树递归（和二叉树一样） |
 | 算法 | 滑动窗口 + 双端队列 |
 ---
+```markdown
+# Web 基础 + 算法笔记
+
+**日期：2026年8月11日**
+
+---
+
+## 一、Web 分层概念
+
+### 1. 三层架构
+
+```
+Controller（接收 HTTP 请求）→ Service（业务逻辑）→ DAO（数据库操作）
+```
+
+| 层 | 对应你现有的 | 职责 |
+|------|------|------|
+| Controller | 新增 | 接收请求，返回响应 |
+| Service | `BookManager` | 业务逻辑，不变 |
+| DAO | `BookDAO` | 数据库操作，不变 |
+| Entity | `Book` | 实体类，不变 |
+
+**Web 版只是把 Main 换成 Controller，里面不动。**
+
+### 2. 接口对应关系
+
+| 控制台操作 | Web 接口 |
+|------|------|
+| 查看所有图书 | `GET /api/books` |
+| 按编号查询 | `GET /api/books/{id}` |
+| 按书名查询 | `GET /api/books?title=xxx` |
+| 添加图书 | `POST /api/books` |
+| 修改图书 | `PUT /api/books/{id}` |
+| 删除图书 | `DELETE /api/books/{id}` |
+| 借书 | `PUT /api/books/{id}/borrow` |
+| 还书 | `PUT /api/books/{id}/return` |
+
+---
+
+## 二、URL 结构
+
+```
+http://localhost:8080/api/books?id=5
+
+http://        → 协议
+localhost      → 主机（Host）
+8080           → 端口
+/api/books     → 路径
+?id=5          → 查询参数
+```
+
+### 符号说明
+
+| 符号 | 作用 | 示例 |
+|------|------|------|
+| `?` | 查询参数起始符 | `/books?title=Java` |
+| `&` | 连接多个参数 | `/books?title=Java&author=张三` |
+| `/` | 路径层级分隔 | `/api/books/5` |
+
+---
+
+## 三、请求与响应
+
+### 1. 请求体
+
+客户端向服务器提交数据时放在里面，GET 没有，POST/PUT 有。
+
+```json
+{
+    "title": "Java入门",
+    "author": "张三",
+    "isbn": "123-456"
+}
+```
+
+### 2. Content-Type
+
+告诉服务器请求体数据格式，`application/json` 表示 JSON 格式。
+
+### 3. JSON
+
+前后端通信的数据格式，花括号 `{}` 包对象，方括号 `[]` 包数组。
+
+---
+
+## 四、今日算法
+
+### 454 四数相加 II
+
+**方法**：HashMap，O(n²)
+
+- 前两个数组：双层循环算 `a+b`，存到 Map，统计出现次数
+- 后两个数组：双层循环算 `-(c+d)`，去 Map 里查，累加次数
+
+### 162 寻找峰值
+
+**方法**：二分查找，往高处走
+
+```java
+while (left < right) {
+    int mid = (left + right) / 2;
+    if (nums[mid] > nums[mid + 1]) {
+        right = mid;      // 下降坡，峰值在左边
+    } else {
+        left = mid + 1;   // 上升坡，峰值在右边
+    }
+}
+return left;  // left == right 就是峰值
+```
+
+**关键**：`nums[-1]` 和 `nums[n]` 视为负无穷，两端天然有峰值倾向。
+
+---
+
+## 五、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Web | 三层架构：Controller/Service/DAO |
+| Web | URL 结构、路径参数 vs 查询参数 |
+| Web | 请求体、Content-Type、JSON |
+| 算法 | HashMap 分组统计 |
+| 算法 | 二分找峰值（往高处走） |
+---
+```markdown
+# Spring Boot 入门 + 算法笔记
+
+**日期：2026年8月12日**
+
+---
+
+## 一、Spring Boot 入门
+
+### 1. Spring Boot 是什么
+
+快速开发 Java Web 应用的框架，封装了 Spring，开箱即用。不用手写 XML 配置，不用手动部署 Tomcat。
+
+### 2. 创建项目
+
+IDEA → 新建 → Spring Boot → 勾选依赖：
+- **Spring Web**（写接口）
+- **MySQL Driver**（连数据库）
+
+### 3. 项目结构
+
+```
+src/main/java/.../
+├── Book.java              ← 实体类
+├── BookDAO.java           ← 数据库操作（@Component）
+├── BookManager.java       ← 业务逻辑（@Component）
+└── controller/
+└── BookController.java ← 接口层（@RestController）
+```
+
+### 4. 核心注解
+
+| 注解 | 作用 | 加在谁身上 |
+|------|------|------|
+| `@SpringBootApplication` | 标记主类，启动项目 | 主类 |
+| `@RestController` | 标记接口类，返回 JSON | Controller |
+| `@RequestMapping("/api/books")` | 指定接口路径前缀 | Controller |
+| `@GetMapping` | 处理 GET 请求 | 方法 |
+| `@PostMapping` | 处理 POST 请求（新增） | 方法 |
+| `@PutMapping` | 处理 PUT 请求（修改） | 方法 |
+| `@DeleteMapping` | 处理 DELETE 请求（删除） | 方法 |
+| `@PathVariable` | 取 URL 路径参数 `/{id}` | 方法参数 |
+| `@RequestParam` | 取 URL 查询参数 `?title=xxx` | 方法参数 |
+| `@RequestBody` | 取请求体 JSON 转对象 | 方法参数 |
+| `@Autowired` | 自动注入对象 | 字段 |
+| `@Component` | 标记类交给 Spring 管理 | Service/DAO |
+
+### 5. 数据库配置
+
+`application.properties`：
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/mydb
+spring.datasource.username=root
+spring.datasource.password=你的密码
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+```
+
+Spring Boot 自动读取配置并创建数据库连接，不需要手写 `getConnection()`。
+
+### 6. 图书管理系统 Web 化
+
+| 控制台操作 | Web 接口 |
+|------|------|
+| 查看所有图书 | `GET /api/books` |
+| 按编号查询 | `GET /api/books/{id}` |
+| 按书名查询 | `GET /api/books/search?title=xxx` |
+| 添加图书 | `POST /api/books` |
+| 修改图书 | `PUT /api/books/{id}` |
+| 删除图书 | `DELETE /api/books/{id}` |
+| 借书 | `PUT /api/books/{id}/borrow` |
+| 还书 | `PUT /api/books/{id}/return` |
+
+### 7. 测试工具
+
+- 浏览器：只能测 GET
+- **Postman**：测试所有请求方式（GET/POST/PUT/DELETE）
+
+---
+
+## 二、今日算法
+
+### 114 二叉树展开为链表
+
+**方法**：后序遍历递归
+
+1. 递归展开左右子树
+2. 左子树移到右边，左子节点置 null
+3. 找到新右子树最右边，接上原右子树
+
+```
+    1
+   / \
+  2   5
+ / \   \
+3   4   6
+
+展开后：1 → 2 → 3 → 4 → 5 → 6
+```
+
+### 509 斐波那契数
+
+**方法**：动态规划，O(n)，O(1)
+
+```java
+int a = 0, b = 1;
+for (int i = 2; i <= n; i++) {
+    int sum = a + b;
+    a = b;
+    b = sum;
+}
+return b;
+```
+
+递归会超时（大量重复计算），用滚动数组优化。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Spring Boot | 项目创建、三层架构、核心注解 |
+| Spring Boot | 数据库配置、接口开发 |
+| 项目 | 图书管理系统 Web 化完成 |
+| 算法 | 后序遍历展开二叉树 |
+| 算法 | 动态规划斐波那契 |
+
+
+---
