@@ -3023,3 +3023,128 @@ return b;
 
 
 ---
+```markdown
+# Spring Boot 完善 + 算法笔记
+
+**日期：2026年8月13日**
+
+---
+
+## 一、Spring Boot 完善
+
+### 1. 统一返回格式 Result
+
+```java
+public class Result<T> {
+    private int code;    // 200 成功，500 失败
+    private String msg;  // 提示信息
+    private T data;      // 数据
+
+    public static <T> Result<T> success(T data) {
+        return new Result<>(200, "成功", data);
+    }
+
+    public static <T> Result<T> error(String msg) {
+        return new Result<>(500, msg, null);
+    }
+}
+```
+
+- `Result` 类**不需要注解**，只是数据包装类
+- Controller 返回 `Result.success(data)` 或 `Result.error("失败")`
+- 前端拿到统一格式：`{"code":200, "msg":"成功", "data":[...]}`
+
+### 2. 泛型 `<T>`
+
+| 写法 | 含义 |
+|------|------|
+| `Result<T>` | 声明类用到泛型 |
+| `public static <T> Result<T>` | 声明泛型方法 |
+| `Result<Book>` | T 具体化为 Book |
+| `Result<List<Book>>` | T 具体化为图书列表 |
+
+### 3. 注入（DI）
+
+**注入**：Spring 自动创建对象并放到你要用的地方，不用自己 `new`。
+
+```java
+@Autowired
+private BookManager bookManager;  // Spring 自动 new 好并赋值
+```
+
+**需要被 Spring 管理的类**：
+- Controller（`@RestController`）
+- Service（`@Service`）
+- DAO（`@Repository`）
+
+**不需要管理的类**：
+- 实体类（`Book`）
+- 工具类/数据包装类（`Result`）
+
+### 4. Controller 返回统一格式示例
+
+```java
+@GetMapping
+public Result<List<Book>> queryAll() {
+    return Result.success(bookManager.queryAll());
+}
+
+@DeleteMapping("/{id}")
+public Result<String> deleteBook(@PathVariable int id) {
+    if (bookManager.deleteBook(id)) {
+        return Result.success("删除成功");
+    }
+    return Result.error("删除失败");
+}
+```
+
+---
+
+## 二、今日算法
+
+### 130 被围绕的区域
+
+**思路**：从边界 O 出发 DFS 标记，剩下的 O 改成 X。
+
+| 步骤 | 操作 |
+|------|------|
+| 1 | 从四条边界 DFS，把相连 O 标记为 `#` |
+| 2 | 遍历网格，`O` → `X`，`#` → `O` |
+
+**关键**：边界上的 O 不被包围，最后要改回来。
+
+### 695 岛屿的最大面积
+
+**思路**：DFS 算每个岛屿面积，取最大值。
+
+```java
+int area = 1;
+area += dfs(grid, i + 1, j);
+area += dfs(grid, i - 1, j);
+area += dfs(grid, i, j + 1);
+area += dfs(grid, i, j - 1);
+return area;
+```
+
+**坑**：
+- `int[][]` 比较用 `== 1`，不是 `== '1'`
+- `++count` 传参不会累加，要用 `area += dfs(...)` 累加返回值
+- `max` 要 `Math.max(max, area)`，不是 `Math.max(0, area)`
+
+### 二维数组行列
+
+| 表达式 | 含义 |
+|------|------|
+| `grid.length` | 行数 |
+| `grid[0].length` | 列数 |
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Spring Boot | 统一返回格式 Result、泛型、注入概念 |
+| 算法 | 边界 DFS 标记法 |
+| 算法 | DFS 求面积（累加返回值） |
+---

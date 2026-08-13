@@ -1,12 +1,16 @@
 package com.bookmanger.springbootbookmanager;
 
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Component
+
+@Service
 public class BookManager {
-        private BookDAO dao=new BookDAO();
+    @Autowired
+        private BookDAO dao;
 
         public void addBook(Book book) {
             dao.addBook(book);
