@@ -3148,3 +3148,125 @@ return area;
 | 算法 | 边界 DFS 标记法 |
 | 算法 | DFS 求面积（累加返回值） |
 ---
+```markdown
+# MyBatis 入门 + 算法笔记
+
+**日期：2026年8月14日**
+
+---
+
+## 一、MyBatis 入门
+
+### 1. MyBatis 是什么
+
+简化数据库操作的框架，用接口 + 注解写 SQL，替代手写 JDBC。
+
+### 2. 对比
+
+| JDBC | MyBatis |
+|------|------|
+| 手动获取连接 | 自动管理连接 |
+| `pstmt.setString(1, title)` | `#{title}` 自动赋值 |
+| 手写 while 循环取结果 | 自动返回 List |
+| SQL 写在字符串里 | SQL 写在注解里 |
+
+### 3. 添加依赖
+
+```xml
+<dependency>
+    <groupId>org.mybatis.spring.boot</groupId>
+    <artifactId>mybatis-spring-boot-starter</artifactId>
+    <version>3.0.3</version>
+</dependency>
+```
+
+### 4. Mapper 接口
+
+```java
+@Mapper
+public interface BookMapper {
+    @Select("SELECT * FROM books")
+    List<Book> queryAll();
+
+    @Select("SELECT * FROM books WHERE id = #{id}")
+    Book queryById(int id);
+
+    @Insert("INSERT INTO books (title, author, isbn, is_borrowed) VALUES (#{title}, #{author}, #{isbn}, #{isBorrowed})")
+    void addBook(Book book);
+
+    @Update("UPDATE books SET title=#{title}, author=#{author}, isbn=#{isbn} WHERE id=#{id}")
+    int updateBook(Book book);
+
+    @Delete("DELETE FROM books WHERE id = #{id}")
+    int deleteBook(int id);
+}
+```
+
+**注解对应**：
+
+| 注解 | 作用 |
+|------|------|
+| `@Mapper` | 标记 Mapper 接口，交给 MyBatis 管理 |
+| `@Select` | 查询 |
+| `@Insert` | 插入 |
+| `@Update` | 修改 |
+| `@Delete` | 删除 |
+
+### 5. Service 注入 Mapper
+
+```java
+@Service
+public class BookManager {
+    @Autowired
+    private BookMapper mapper;
+}
+```
+
+### 6. 常见问题
+
+| 问题 | 解决 |
+|------|------|
+| Mapper 找不到 | 主类加 `@MapperScan("包路径")` |
+| `sqlSessionFactory required` | Spring Boot 4.x 和 MyBatis 不兼容，降级到 3.3.5 |
+| 依赖版本缺失 | 手动加 `<version>3.3.5</version>` |
+
+---
+
+## 二、今日算法
+
+### 70 爬楼梯
+
+**方法**：动态规划，滚动数组
+
+```
+f(n) = f(n-1) + f(n-2)
+```
+
+和斐波那契完全一样。O(n) 时间，O(1) 空间。递归会超时。
+
+### 50 Pow(x, n)
+
+**方法**：快速幂，O(log n)
+
+```java
+while (N > 0) {
+    if (N % 2 == 1) result *= x;  // 二进制位为1，乘入结果
+    x *= x;                        // 底数平方
+    N /= 2;                        // 指数折半
+}
+```
+
+**思路**：指数二分，偶数 `x^n = (x²)^(n/2)`，奇数多乘一个 x。暴力 O(n) 会超时。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| MyBatis | Mapper 接口 + 注解写 SQL |
+| MyBatis | `#{}` 自动赋值 |
+| 版本 | Spring Boot 4.x 不兼容 MyBatis，降级 3.3.5 |
+| 算法 | 滚动数组（爬楼梯） |
+| 算法 | 快速幂（二分指数） |
+---
