@@ -3270,3 +3270,108 @@ while (N > 0) {
 | 算法 | 滚动数组（爬楼梯） |
 | 算法 | 快速幂（二分指数） |
 ---
+```markdown
+# Spring Boot 进阶 + 算法笔记
+
+**日期：2026年8月15日**
+
+---
+
+## 一、Spring Boot 进阶
+
+### 1. 参数校验
+
+**步骤**：
+
+| 步骤 | 操作 |
+|------|------|
+| 1 | pom.xml 加 `spring-boot-starter-validation` 依赖 |
+| 2 | `Book` 类字段加校验注解 |
+| 3 | Controller 方法参数加 `@Valid` |
+
+**示例**：
+
+```java
+public class Book {
+    private int id;
+
+    @NotBlank(message = "书名不能为空")
+    private String title;
+
+    @NotBlank(message = "作者不能为空")
+    private String author;
+}
+
+@PostMapping
+public Result<String> addBook(@Valid @RequestBody Book book) {
+    ...
+}
+```
+
+**`@Valid` 作用**：检查 `@RequestBody` 对象的校验注解，不合格直接拦截。
+
+### 2. 全局异常处理
+
+```java
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(Exception.class)
+    public Result<String> handleException(Exception e) {
+        return Result.error(e.getMessage());
+    }
+}
+```
+
+| 注解 | 作用 |
+|------|------|
+| `@RestControllerAdvice` | 全局异常处理器 |
+| `@ExceptionHandler` | 指定处理哪种异常 |
+
+---
+
+## 二、今日算法
+
+### 105 从前序与中序遍历构造二叉树
+
+**思路**：前序第一个是根，中序找根分左右，递归。
+
+```
+前序：[3, 9, 20, 15, 7]
+中序：[9, 3, 15, 20, 7]
+
+根 = 3（前序第一个）
+中序找 3：左边 [9] 左子树，右边 [15,20,7] 右子树
+```
+
+**递归条件**：区间为空返回 null。
+
+### 113 路径总和 II
+
+**方法**：DFS + 回溯
+
+```java
+path.add(root.val);
+if (root.left == null && root.right == null && targetSum == root.val) {
+    result.add(new ArrayList<>(path));
+}
+dfs(root.left, targetSum - root.val, path, result);
+dfs(root.right, targetSum - root.val, path, result);
+path.remove(path.size() - 1);  // 回溯
+```
+
+**回溯**：每次递归返回前删掉当前节点，保证路径列表只存当前分支。
+
+**为什么递归能回溯多次**：递归是栈结构，每层返回执行一次 `remove`，返回多少层就清理多少次。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Spring Boot | 参数校验 @Valid + @NotBlank |
+| Spring Boot | 全局异常处理 @RestControllerAdvice |
+| 算法 | 前序+中序构造二叉树（前序找根，中序分左右） |
+| 算法 | 路径总和 II（DFS + 回溯） |
+---

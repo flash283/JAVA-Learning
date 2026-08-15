@@ -3,6 +3,7 @@ package com.bookmanger.springbootbookmanager.controller;
 import com.bookmanger.springbootbookmanager.Book;
 import com.bookmanger.springbootbookmanager.BookManager;
 import com.bookmanger.springbootbookmanager.Result;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,14 +36,14 @@ public class BookController {
 
     // 添加
     @PostMapping
-    public Result<String> addBook(@RequestBody Book book) {
+    public Result<String> addBook(@Valid @RequestBody Book book) {
         bookManager.addBook(book);
         return Result.success("添加成功");
     }
 
     // 修改
     @PutMapping("/{id}")
-    public Result<String> updateBook(@PathVariable int id, @RequestBody Book book) {
+    public Result<String> updateBook(@PathVariable int id, @Valid @RequestBody Book book) {
         if (bookManager.updateBook(id, book)) {
             return Result.success("修改成功");
         }

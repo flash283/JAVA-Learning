@@ -1,9 +1,16 @@
 package com.bookmanger.springbootbookmanager;
+import jakarta.validation.constraints.NotBlank;
 
 public class Book {
-    private int id;              //图书编号
+    private int id;               //图书编号
+
+    @NotBlank(message = "书名不能为空")
     private String title;        //书名
+
+    @NotBlank(message = "作者不能为空")
     private String author;       //作者
+
+    @NotBlank(message = "ISBN不能为空")
     private String isbn;         //ISBN号
     private boolean isBorrowed;  //是否借出
 
