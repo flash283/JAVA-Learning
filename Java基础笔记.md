@@ -730,8 +730,8 @@ git push              # 推送到 GitHub
 ### 4. 首次配置
 
 ```bash
-git config --global user.name "你的用户名"
-git config --global user.email "你的邮箱"
+git config --global username.name "你的用户名"
+git config --global username.email "你的邮箱"
 ```
 
 ---
@@ -2275,7 +2275,7 @@ Java 连接数据库的标准接口，用 Java 代码操作 MySQL。
 | 步骤 | 代码 |
 |------|------|
 | 加载驱动 | `Class.forName("com.mysql.cj.jdbc.Driver")`（8.0+ 可省略） |
-| 获取连接 | `DriverManager.getConnection(url, user, password)` |
+| 获取连接 | `DriverManager.getConnection(url, username, password)` |
 | 执行 SQL | `PreparedStatement` |
 | 处理结果 | `ResultSet` |
 | 关闭连接 | `close()` 或 try-with-resources 自动关闭 |
@@ -2440,7 +2440,7 @@ Main（界面） → BookManager（业务） → BookDAO（数据库操作）
 
 用户输入被当成 SQL 代码执行的安全漏洞。
 
-- **危险**：`"SELECT * FROM user WHERE name = '" + name + "'"` 拼接字符串
+- **危险**：`"SELECT * FROM username WHERE name = '" + name + "'"` 拼接字符串
 - **安全**：`PreparedStatement` + `?` 占位符，自动转义
 
 ### 3. 事务
@@ -3374,4 +3374,110 @@ path.remove(path.size() - 1);  // 回溯
 | Spring Boot | 全局异常处理 @RestControllerAdvice |
 | 算法 | 前序+中序构造二叉树（前序找根，中序分左右） |
 | 算法 | 路径总和 II（DFS + 回溯） |
+---
+```markdown
+# Spring Boot 登录注册 + 算法笔记
+
+**日期：2026年8月16日**
+
+---
+
+## 一、登录注册功能
+
+### 1. 数据库建表
+
+```sql
+CREATE TABLE `user` (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL
+);
+```
+
+`user` 是 MySQL 关键字，加反引号。
+
+### 2. 分层结构
+
+| 层 | 类 | 作用 |
+|------|------|------|
+| 实体 | `User` | id、username、password |
+| Mapper | `UserMapper` | 注册、按用户名查询 |
+| Service | `UserService` | 业务逻辑（查重、校验密码） |
+| Controller | `UserController` | 注册、登录接口 |
+
+### 3. 接口
+
+| 接口 | 地址 | 请求体 |
+|------|------|------|
+| 注册 | `POST /api/user/register` | `{"username":"zhangsan","password":"123456"}` |
+| 登录 | `POST /api/user/login` | 同上 |
+
+### 4. UserMapper 注解
+
+```java
+@Insert("INSERT INTO `user` (username,password) VALUES (#{username},#{password})")
+void register(User user);
+
+@Select("SELECT * FROM `user` WHERE username = #{username}")
+User findByUsername(String username);
+```
+
+### 5. 关键点
+
+- `@Mapper` 接口不用实现，MyBatis 自动生成代理对象并注入
+- `username` 字段名要和数据库、`#{username}` 一致
+- 密码暂时明文存储，实际项目要加密（大二学）
+
+---
+
+## 二、今日算法
+
+### 844 比较含退格的字符串
+
+**方法**：StringBuilder 当栈
+
+- 遇字符 → `append`
+- 遇 `#` → 删最后一个字符
+
+```java
+private String build(String str) {
+    StringBuilder sb = new StringBuilder();
+    for (char c : str.toCharArray()) {
+        if (c == '#') {
+            if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
+        } else {
+            sb.append(c);
+        }
+    }
+    return sb.toString();
+}
+```
+
+### 1441 用栈操作构建数组
+
+**方法**：模拟，`index` 指向 target 当前位置
+
+```java
+for (int i = 1; i <= n && index < target.length; i++) {
+    result.add("Push");
+    if (target[index] == i) {
+        index++;           // 匹配上，看下一个
+    } else {
+        result.add("Pop"); // 不匹配，Push 后马上 Pop
+    }
+}
+```
+
+不需要真的用栈，`index` 记录匹配位置即可。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Spring Boot | 用户表 + 注册登录接口 |
+| MyBatis | `@Insert`、`@Select`、`#{}` |
+| 算法 | 栈模拟退格 |
+| 算法 | 模拟构建数组 |
 ---
