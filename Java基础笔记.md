@@ -3566,3 +3566,109 @@ return queue.size();                    // 剩余的都是最近的
 | 算法 | 循环队列：size 判空判满，取模循环 |
 | 算法 | 队列应用：滑动时间窗口 |
 ---
+```markdown
+# Spring Boot 用户 CRUD + 算法笔记
+
+**日期：2026年8月18日**
+
+---
+
+## 一、用户管理 CRUD
+
+### 1. CRUD 含义
+
+| 字母 | 含义 | SQL |
+|------|------|------|
+| C | Create 增 | `INSERT` |
+| R | Read 查 | `SELECT` |
+| U | Update 改 | `UPDATE` |
+| D | Delete 删 | `DELETE` |
+
+### 2. 三层架构
+
+| 层 | 职责 |
+|------|------|
+| Controller | 接收 HTTP 请求，返回响应 |
+| Service | 业务逻辑 |
+| Mapper | 操作数据库，执行 SQL |
+
+调用顺序：浏览器 → Controller → Service → Mapper → 数据库
+
+### 3. 用户接口
+
+| 接口 | 功能 |
+|------|------|
+| `POST /api/user/register` | 注册 |
+| `POST /api/user/login` | 登录 |
+| `GET /api/user` | 查询所有 |
+| `GET /api/user/{id}` | 按 id 查询 |
+| `PUT /api/user/{id}` | 修改用户 |
+| `DELETE /api/user/{id}` | 删除用户 |
+
+### 4. UserMapper 注解
+
+```java
+@Select("SELECT * FROM `user`")
+List<User> queryAll();
+
+@Select("SELECT * FROM `user` WHERE id = #{id}")
+User queryById(int id);
+
+@Update("UPDATE `user` SET username=#{username}, password=#{password} WHERE id=#{id}")
+int updateUser(User user);
+
+@Delete("DELETE FROM `user` WHERE id = #{id}")
+int deleteUser(int id);
+```
+
+---
+
+## 二、今日算法
+
+### 3 无重复字符的最长子串
+
+**方法**：滑动窗口 + HashSet
+
+```java
+HashSet<Character> set = new HashSet<>();
+int left = 0, max = 0;
+for (int right = 0; right < s.length(); right++) {
+    while (set.contains(s.charAt(right))) {
+        set.remove(s.charAt(left));
+        left++;
+    }
+    set.add(s.charAt(right));
+    max = Math.max(max, right - left + 1);
+}
+return max;
+```
+
+**为什么用 HashSet 不用 List**：`contains` 和 `remove` 都是 O(1)，List 是 O(n)。
+
+### 567 字符串的排列
+
+**方法**：滑动窗口 + 字符计数，窗口大小固定为 s1 长度。
+
+```java
+int[] count1 = new int[26];
+int[] count2 = new int[26];
+// 统计 s1 和前 s1.length() 个 s2
+// 滑动：右边加一个，左边删一个
+count2[s2.charAt(i) - 'a']++;
+count2[s2.charAt(i - s1.length()) - 'a']--;
+// 两个计数数组相等 → 找到排列
+```
+
+**关键**：窗口固定大小，每次只换首尾两个字符。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Spring Boot | 用户模块完整 CRUD |
+| Spring Boot | 三层架构职责 |
+| 算法 | 滑动窗口（HashSet 版） |
+| 算法 | 滑动窗口（计数数组版） |
+---
