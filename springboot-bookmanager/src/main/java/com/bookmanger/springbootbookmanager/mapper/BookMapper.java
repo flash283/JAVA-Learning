@@ -33,5 +33,13 @@ public interface BookMapper {
 
     @Select("SELECT * FROM books LIMIT #{offset},#{size}")
     List<Book> queryByPage(@Param("offset") int offset,@Param("size") int size);
+
+    @Select("SELECT * FROM books WHERE author=#{author}")
+    List<Book> queryByAuthor(String author);
+
+
+    @Select("SELECT * FROM books WHERE is_borrowed = #{borrowed}")
+    List<Book> queryByBorrowed(boolean borrowed);
+
 }
 

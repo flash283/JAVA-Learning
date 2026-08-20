@@ -51,4 +51,13 @@ public class BookManager {
         return mapper.queryByPage(offset,size);
     }
 
+    public List<Book> queryByAuthor(String author){
+        return mapper.queryByAuthor(author);
+    }
+
+    public List<Book> queryByBorrowed(boolean borrowed) {
+        return mapper.queryByBorrowed(borrowed);
+    }
+
+
 }

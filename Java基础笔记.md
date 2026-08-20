@@ -3887,3 +3887,90 @@ for (char c : stones.toCharArray()) {
 | 算法 | HashSet 判断存在 |
 | 思想 | 集合选择场景 |
 ---
+```markdown
+# Spring Boot 条件查询 + 算法笔记
+
+**日期：2026年8月21日**
+
+---
+
+## 一、条件查询
+
+### 1. 接口设计
+
+```
+GET /api/books/filter?author=张三        → 按作者查
+GET /api/books/filter?borrowed=true      → 按借阅状态查
+GET /api/books/filter                    → 查全部
+```
+
+一个接口支持多个可选条件，用 `required = false`。
+
+### 2. Mapper
+
+```java
+@Select("SELECT * FROM books WHERE author = #{author}")
+List<Book> queryByAuthor(String author);
+
+@Select("SELECT * FROM books WHERE is_borrowed = #{borrowed}")
+List<Book> queryByBorrowed(boolean borrowed);
+```
+
+### 3. Controller
+
+```java
+@GetMapping("/filter")
+public Result<List<Book>> queryByFilter(@RequestParam(required = false) String author,
+                                        @RequestParam(required = false) Boolean borrowed) {
+    if (author != null) return Result.success(bookManager.queryByAuthor(author));
+    if (borrowed != null) return Result.success(bookManager.queryByBorrowed(borrowed));
+    return Result.success(bookManager.queryAll());
+}
+```
+
+**`required = false`**：参数可传可不传，不传时值为 null。
+
+---
+
+## 二、今日算法
+
+### 560 和为 K 的子数组
+
+**方法**：前缀和 + HashMap，O(n)
+
+```java
+Map<Integer, Integer> map = new HashMap<>();
+map.put(0, 1);  // 前缀和为0出现1次
+int sum = 0, count = 0;
+for (int num : nums) {
+    sum += num;
+    if (map.containsKey(sum - k)) count += map.get(sum - k);
+    map.put(sum, map.getOrDefault(sum, 0) + 1);
+}
+return count;
+```
+
+**核心**：子数组和 = 当前前缀和 - 之前前缀和 = k。所以找之前出现过的 `sum - k`。
+
+**`map.put(0,1)` 的作用**：不漏掉从数组开头到当前位置正好和为 k 的情况。
+
+### 70 爬楼梯
+
+**方法**：动态规划，滚动数组
+
+```
+f(n) = f(n-1) + f(n-2)
+```
+
+和斐波那契一样，O(n) 时间，O(1) 空间。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Spring Boot | 条件查询（多可选参数） |
+| 算法 | 前缀和 + HashMap |
+| 算法 | 动态规划爬楼梯 |
+---
