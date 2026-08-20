@@ -46,4 +46,9 @@ public class BookManager {
         return mapper.returnBook(id) > 0;
     }
 
+    public  List<Book> queryByPage(int page, int size){
+        int offset=(page-1)*size;
+        return mapper.queryByPage(offset,size);
+    }
+
 }

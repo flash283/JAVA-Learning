@@ -3770,3 +3770,120 @@ if (right - left + 1 - maxCount > k) {
 | 算法 | 滑动窗口（替换字符） |
 | 思想 | 双指针分类 |
 ---
+```markdown
+# Spring Boot 分页 + 算法笔记
+
+**日期：2026年8月20日**
+
+---
+
+## 一、分页查询
+
+### 1. 分页三要素
+
+| 参数 | 含义 | 示例 |
+|------|------|------|
+| `page` | 第几页 | 2 |
+| `size` | 每页几条 | 5 |
+| `offset` | 跳过几条 | (page-1)*size = 5 |
+
+### 2. SQL 实现
+
+```sql
+SELECT * FROM books LIMIT #{offset}, #{size}
+```
+
+`LIMIT offset, size`：跳过 offset 条取 size 条。
+
+### 3. 代码实现
+
+**Mapper**：
+
+```java
+@Select("SELECT * FROM books LIMIT #{offset}, #{size}")
+List<Book> queryByPage(@Param("offset") int offset, @Param("size") int size);
+```
+
+**Service**：
+
+```java
+public List<Book> queryByPage(int page, int size) {
+    int offset = (page - 1) * size;
+    return mapper.queryByPage(offset, size);
+}
+```
+
+**Controller**：
+
+```java
+@GetMapping("/page")
+public Result<List<Book>> queryByPage(@RequestParam int page, @RequestParam int size) {
+    return Result.success(bookManager.queryByPage(page, size));
+}
+```
+
+### 4. 访问方式
+
+```
+GET /api/books/page?page=2&size=5
+```
+
+`?` 后面跟参数，`&` 连接多个参数。
+
+### 5. 为什么用 @Param
+
+单个参数 MyBatis 不关心参数名，多个参数时必须用 `@Param` 区分。
+
+---
+
+## 二、今日算法
+
+### 34 查找元素第一个和最后一个位置
+
+**方法**：两次二分
+
+| 边界 | 条件 | 最终指针 |
+|------|------|------|
+| 左边界 | `nums[mid] >= target` → `high = mid - 1` | `low` 停在第一个 target |
+| 右边界 | `nums[mid] <= target` → `low = mid + 1` | `high` 停在最后一个 target |
+
+O(log n)，暴力是 O(n)。
+
+### 771 宝石与石头
+
+**方法**：HashSet，O(n+m)
+
+```java
+HashSet<Character> set = new HashSet<>();
+for (char c : jewels.toCharArray()) set.add(c);
+for (char c : stones.toCharArray()) {
+    if (set.contains(c)) count++;
+}
+```
+
+---
+
+## 三、集合选择场景
+
+| 集合 | 场景 |
+|------|------|
+| List | 有序、可重复、按下标访问 |
+| Set | 去重、判断存在 |
+| Map | 计数、映射关系 |
+| Stack | 匹配、后进先出 |
+| Queue | 排队、BFS |
+
+**口诀**：查存在用 Set，计数映射用 Map，保序用 List，匹配用 Stack，BFS 用 Queue。
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Spring Boot | 分页查询（page/size/offset） |
+| MyBatis | @Param 多参数 |
+| 算法 | 二分左右边界 |
+| 算法 | HashSet 判断存在 |
+| 思想 | 集合选择场景 |
+---

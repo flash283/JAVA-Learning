@@ -76,4 +76,9 @@ public class BookController {
         }
         return Result.error("还书失败");
     }
+
+    @GetMapping("/page")
+    public Result<List<Book>> queryByPage(@RequestParam int page,@RequestParam int size){
+        return Result.success(bookManager.queryByPage(page,size));
+    }
 }

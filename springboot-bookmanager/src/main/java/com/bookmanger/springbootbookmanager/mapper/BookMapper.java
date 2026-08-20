@@ -30,5 +30,8 @@ public interface BookMapper {
 
     @Update("UPDATE books SET is_borrowed = FALSE WHERE id = #{id} AND is_borrowed = TRUE")
     int returnBook(int id);
+
+    @Select("SELECT * FROM books LIMIT #{offset},#{size}")
+    List<Book> queryByPage(@Param("offset") int offset,@Param("size") int size);
 }
 
