@@ -1,5 +1,6 @@
-package com.bookmanger.springbootbookmanager;
+package com.bookmanger.springbootbookmanager.service;
 
+import com.bookmanger.springbootbookmanager.Book;
 import com.bookmanger.springbootbookmanager.mapper.BookMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -9,7 +10,7 @@ import java.util.List;
 
 
 @Service
-public class BookManager {
+public class BookService {
     @Autowired
     private BookMapper mapper;
 
