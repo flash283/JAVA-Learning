@@ -4054,3 +4054,99 @@ while (slow != fast) {
 | 算法 | 前缀和求最长（存位置） |
 | 算法 | 快慢指针找环入口 |
 ---
+```markdown
+# 项目整理 + 算法复习笔记
+
+**日期：2026年8月23日**
+
+---
+
+## 一、项目整理
+
+### 1. 包结构优化
+
+| 包 | 放什么 |
+|------|------|
+| `controller` | `BookController`、`UserController` |
+| `service` | `BookService`、`UserService` |
+| `mapper` | `BookMapper`、`UserMapper` |
+| 主包 | `Book`、`User`、`Result` |
+
+标准三层架构：Controller → Service → Mapper。
+
+### 2. README
+
+项目的说明书，放在 GitHub 仓库根目录，包含：
+- 项目简介
+- 技术栈
+- 功能列表
+- 接口文档
+- 数据库建表语句
+- 运行方式
+
+**作用**：让别人快速了解项目，面试时展示项目能力。
+
+### 3. 接口概念澄清
+
+- 后端说的"接口"是 **HTTP 接口**，对应 Controller 里的方法
+- 不是 Java 的 `interface` 抽象类型
+- 你的项目共 15 个 HTTP 接口（图书 10 个 + 用户 5 个）
+
+### 4. MyBatis 配置
+
+- 传统 MyBatis：需要 `mybatis-config.xml` 和 `XxxMapper.xml`
+- Spring Boot + MyBatis：注解写 SQL，自动配置，不需要 XML
+
+---
+
+## 二、算法复习
+
+### 206 反转链表
+
+三指针法：`prev`、`curr`、`next`
+
+```java
+ListNode prev = null;
+ListNode curr = head;
+while (curr != null) {
+    ListNode next = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = next;
+}
+return prev;
+```
+
+### 102 层序遍历
+
+BFS + 队列
+
+```java
+Queue<TreeNode> queue = new LinkedList<>();
+queue.offer(root);
+while (!queue.isEmpty()) {
+    int size = queue.size();
+    List<Integer> level = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+        TreeNode node = queue.poll();
+        level.add(node.val);
+        if (node.left != null) queue.offer(node.left);
+        if (node.right != null) queue.offer(node.right);
+    }
+    result.add(level);
+}
+```
+
+**注意**：`root == null` 返回空列表，不是 null。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| 项目 | 包结构规范、README 编写 |
+| 概念 | HTTP 接口 vs Java interface |
+| MyBatis | Spring Boot 自动配置，无需 XML |
+| 算法 | 反转链表三指针、层序 BFS |
+---
