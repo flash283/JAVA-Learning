@@ -4150,3 +4150,100 @@ while (!queue.isEmpty()) {
 | MyBatis | Spring Boot 自动配置，无需 XML |
 | 算法 | 反转链表三指针、层序 BFS |
 ---
+```markdown
+# 全局异常处理 + 算法笔记
+
+**日期：2026年8月24日**
+
+---
+
+## 一、全局异常处理
+
+### 1. 作用
+
+不让错误直接暴露给前端，任何异常都返回统一友好格式。
+
+### 2. 实现
+
+```java
+@RestControllerAdvice
+public class GlobalException {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Result<String> handleValidException(MethodArgumentNotValidException e) {
+        String msg = e.getBindingResult().getFieldError().getDefaultMessage();
+        return Result.error(msg);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public Result<String> handleException(Exception e) {
+        return Result.error("服务器异常：" + e.getMessage());
+    }
+}
+```
+
+### 3. 关键注解
+
+| 注解 | 作用 |
+|------|------|
+| `@RestControllerAdvice` | 全局异常处理 |
+| `@ExceptionHandler` | 捕获指定异常类型 |
+
+### 4. 错误提示来源
+
+`@NotBlank(message = "书名不能为空")` 里的 message 定义在 `Book` 类字段上，校验失败时通过 `getDefaultMessage()` 取出。
+
+### 5. 异常层级
+
+- `MethodArgumentNotValidException`：参数校验失败
+- `Exception`：所有异常的父类，兜底
+
+---
+
+## 二、今日算法
+
+### 24 两两交换链表中的节点
+
+**方法**：虚拟头节点 + 迭代
+
+```java
+ListNode dummy = new ListNode(0);
+dummy.next = head;
+ListNode prev = dummy;
+
+while (prev.next != null && prev.next.next != null) {
+    ListNode first = prev.next;
+    ListNode second = first.next;
+
+    first.next = second.next;
+    second.next = first;
+    prev.next = second;
+
+    prev = first;
+}
+return dummy.next;
+```
+
+**连接方式**：`prev.next = second` 接当前组，`prev = first` 移到下一组前。
+
+### 25 K 个一组翻转链表
+
+**方法**：递归 + 分组翻转
+
+```java
+// 1. 判断剩余是否有 k 个，不够返回 head
+// 2. 翻转前 k 个（三指针法）
+// 3. head.next = reverseKGroup(curr, k) 递归翻转后面
+// 4. return prev（新头）
+```
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Spring Boot | 全局异常处理 |
+| 算法 | 虚拟头节点技巧 |
+| 算法 | 链表分组翻转（递归） |
+---
