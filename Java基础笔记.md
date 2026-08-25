@@ -4247,3 +4247,101 @@ return dummy.next;
 | 算法 | 虚拟头节点技巧 |
 | 算法 | 链表分组翻转（递归） |
 ---
+```markdown
+# 拦截器 + 动态规划笔记
+
+**日期：2026年8月25日**
+
+---
+
+## 一、拦截器实现权限控制
+
+### 1. 两个类
+
+| 类 | 作用 |
+|------|------|
+| `LoginInterceptor` | 检查请求头 token，没带返回 401 |
+| `WebConfig` | 注册拦截器，配置拦截范围 |
+
+### 2. LoginInterceptor
+
+```java
+public class LoginInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        String token = request.getHeader("token");
+        if (token == null) {
+            response.setStatus(401);
+            return false;  // 拦截
+        }
+        return true;  // 放行
+    }
+}
+```
+
+### 3. WebConfig
+
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new LoginInterceptor())
+                .addPathPatterns("/api/books/**")
+                .excludePathPatterns("/api/user/**");
+    }
+}
+```
+
+### 4. 关键对象
+
+| 对象 | 作用 |
+|------|------|
+| `HttpServletRequest` | 请求对象，取 token |
+| `HttpServletResponse` | 响应对象，设状态码 |
+| `HandlerInterceptor` | 拦截器接口 |
+| `InterceptorRegistry` | 拦截器注册中心 |
+
+---
+
+## 二、今日算法
+
+### 198 打家劫舍
+
+**方法**：动态规划
+
+```
+dp[i] = max(dp[i-1], dp[i-2] + nums[i])
+```
+
+- `dp[i-1]`：不抢第 i 家
+- `dp[i-2] + nums[i]`：抢第 i 家
+
+**错误思路**：隔一个抢（奇偶分组）不是最优，可能跳两个更优。
+
+### 213 打家劫舍 II
+
+**方法**：环状拆分
+
+```
+去掉第一家 robRange(1, n-1)
+去掉最后一家 robRange(0, n-2)
+取两者最大
+```
+
+### 动态规划思想
+
+- 核心：当前状态由前几个状态推出
+- 用数组记录中间结果，避免重复计算
+- 比递归快，空间换时间
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Spring Boot | 拦截器 + 登录校验 |
+| 算法 | 动态规划打家劫舍 |
+| 算法 | 环状问题拆分 |
+---
