@@ -4413,3 +4413,95 @@ max = max(max, dp)
 ```
 
 ---
+```markdown
+# 项目部署 + 树算法笔记
+
+**日期：2026年8月27日**
+
+---
+
+## 一、项目部署
+
+### 1. 打包 jar
+
+IDEA 右侧 Maven 面板 → 生命周期 → `package`（可跳过测试）。
+
+生成：`target/springboot-bookmanager-0.0.1-SNAPSHOT.jar`
+
+### 2. 运行 jar
+
+```bash
+cd target
+java -jar springboot-bookmanager-0.0.1-SNAPSHOT.jar
+```
+
+启动后访问 `http://localhost:8080`。
+
+### 3. Linux 常用命令
+
+| 命令 | 作用 |
+|------|------|
+| `cd` | 切换目录 |
+| `ls` | 查看文件列表 |
+| `mkdir` | 创建目录 |
+| `rm` | 删除文件 |
+| `java -jar xxx.jar` | 运行 jar |
+| `nohup java -jar xxx.jar &` | 后台运行 |
+| `kill 进程号` | 停止进程 |
+
+---
+
+## 二、今日算法
+
+### 124 二叉树中的最大路径和
+
+**方法**：后序遍历递归
+
+- 每个节点算左右子树最大单边贡献
+- 经过当前节点的路径 = 左贡献 + 右贡献 + 当前节点值
+- 更新全局最大值
+- 返回单边最大贡献给父节点
+
+```java
+int left = Math.max(0, dfs(root.left, max));
+int right = Math.max(0, dfs(root.right, max));
+max[0] = Math.max(max[0], left + right + root.val);
+return Math.max(left, right) + root.val;
+```
+
+**关键**：返回值只能选一边（路径不能分叉）。
+
+### 543 二叉树的直径
+
+**方法**：后序遍历递归
+
+- 每个节点算左右子树深度
+- 直径 = 左深度 + 右深度
+- 更新全局最大值
+- 返回深度
+
+```java
+max[0] = Math.max(max[0], left + right);
+return Math.max(left, right) + 1;
+```
+
+### 两题共同点
+
+- 都是递归遍历，边遍历边更新全局最大值
+- 用 `int[]` 传引用共享修改
+- 返回值是"单边贡献"，全局答案是"经过当前节点的最优值"
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| 部署 | jar 打包运行、Linux 命令 |
+| 算法 | 树的最大路径和 |
+| 算法 | 树的直径 |
+| 思想 | 递归 + 全局变量更新最优值 |
+
+
+---
+
