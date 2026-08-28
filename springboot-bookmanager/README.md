@@ -1,5 +1,3 @@
-README 直接复制我这个，按你实际密码修改一下说明即可：
-
 ```markdown
 # 图书管理系统（Spring Boot 版）
 

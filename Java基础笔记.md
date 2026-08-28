@@ -4505,3 +4505,88 @@ return Math.max(left, right) + 1;
 
 ---
 
+```markdown
+# 接口文档 + 回溯算法笔记
+
+**日期：2026年8月28日**
+
+---
+
+## 一、接口文档整理
+
+### 手写接口文档
+
+在 README 里用表格列出所有接口：方法、路径、参数、说明。
+
+### 接口总览
+
+| 模块 | 接口数 |
+|------|------|
+| 图书 | 10 个 |
+| 用户 | 6 个 |
+
+### 格式示例
+
+```markdown
+| 接口 | 方法 | 参数 | 说明 |
+|------|------|------|------|
+| /api/books | GET | 无 | 查询所有 |
+| /api/books/{id} | PUT | id, body | 修改 |
+```
+
+---
+
+## 二、今日算法：回溯
+
+### 46 全排列
+
+**思路**：每个位置尝试放没用过的数字
+
+```java
+for (int num : nums) {
+    if (path.contains(num)) continue;
+    path.add(num);
+    backtrack(nums, path, result);
+    path.remove(path.size() - 1);  // 撤销
+}
+```
+
+终止条件：`path.size() == nums.length`
+
+### 78 子集
+
+**思路**：每个元素选或不选
+
+```java
+result.add(new ArrayList<>(path));  // 每个状态都是子集
+
+for (int i = start; i < nums.length; i++) {
+    path.add(nums[i]);
+    backtrack(nums, i + 1, path, result);  // i+1 不重复选
+    path.remove(path.size() - 1);
+}
+```
+
+### 回溯模板
+
+```
+选择 → 递归 → 撤销
+```
+
+| 题 | 和排列区别 | 和子集区别 |
+|------|------|------|
+| 全排列 | 所有元素都用，顺序不同 | 用 start 防止重复选 |
+| 子集 | 每个元素选或不选 | 中间状态就是答案 |
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| 项目 | 接口文档整理 |
+| 算法 | 回溯：全排列 |
+| 算法 | 回溯：子集 |
+| 模板 | 选择 → 递归 → 撤销 |
+---
+
