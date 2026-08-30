@@ -4669,3 +4669,86 @@ for (char c : letters.toCharArray()) {
 | 算法 | 回溯：电话号码字母组合 |
 | 模板 | 回溯三步骤 |
 ---
+```markdown
+# 项目文档 + 算法复习笔记
+
+**日期：2026年8月30日**
+
+---
+
+## 一、README 完善
+
+### README 应包含
+
+| 内容 | 说明 |
+|------|------|
+| 项目简介 | 一两句话，项目是什么 |
+| 技术栈 | Spring Boot、MyBatis、MySQL、Maven |
+| 功能列表 | 图书管理、用户管理 |
+| 接口文档 | 表格列出所有接口 |
+| 数据库建表 | books、user 表 SQL |
+| 运行方式 | 建库、改密码、跑主类、测试 |
+
+### 运行方式示例
+
+```markdown
+1. 创建数据库并建表
+2. 修改 application.properties 里的数据库密码
+3. 运行 SpringbootBookmanagerApplication
+4. 用 Postman/Apifox 测试接口
+```
+
+---
+
+## 二、算法复习
+
+### 141 环形链表
+
+**方法**：快慢指针
+
+```java
+while (fast != null && fast.next != null) {
+    fast = fast.next.next;
+    slow = slow.next;
+    if (fast == slow) return true;
+}
+return false;
+```
+
+**注意**：循环条件是 `fast != null && fast.next != null`，不是 `fast.next.next`。
+
+### 20 有效的括号
+
+**方法**：栈
+
+```java
+Stack<Character> stack = new Stack<>();
+for (char c : s.toCharArray()) {
+    if (c == '{' || c == '(' || c == '[') {
+        stack.push(c);
+    } else {
+        if (stack.isEmpty()) return false;
+        char top = stack.pop();
+        if (c == ')' && top != '(') return false;
+        if (c == '}' && top != '{') return false;
+        if (c == ']' && top != '[') return false;
+    }
+}
+return stack.isEmpty();
+```
+
+**常见错误**：
+- 匹配条件写反（右括号和左括号要对应）
+- 忘记 pop，栈不清空
+- 最后不判断栈是否为空
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| 项目 | README 完整规范 |
+| 算法 | 快慢指针判环 |
+| 算法 | 栈判断括号 |
+---
