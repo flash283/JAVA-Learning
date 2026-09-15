@@ -1,6 +1,6 @@
 package com.bookmanger.springbootbookmanager.mapper;
 
-import com.bookmanger.springbootbookmanager.Book;
+import com.bookmanger.springbootbookmanager.entity.Book;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

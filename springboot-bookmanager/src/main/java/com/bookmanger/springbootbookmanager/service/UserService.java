@@ -1,6 +1,6 @@
 package com.bookmanger.springbootbookmanager.service;
 
-import com.bookmanger.springbootbookmanager.User;
+import com.bookmanger.springbootbookmanager.entity.User;
 import com.bookmanger.springbootbookmanager.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

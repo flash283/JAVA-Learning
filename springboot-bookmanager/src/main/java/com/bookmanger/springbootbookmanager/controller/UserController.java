@@ -2,7 +2,7 @@ package com.bookmanger.springbootbookmanager.controller;
 
 
 import com.bookmanger.springbootbookmanager.Result;
-import com.bookmanger.springbootbookmanager.User;
+import com.bookmanger.springbootbookmanager.entity.User;
 import com.bookmanger.springbootbookmanager.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

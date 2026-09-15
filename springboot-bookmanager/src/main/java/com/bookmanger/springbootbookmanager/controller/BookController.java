@@ -1,6 +1,6 @@
 package com.bookmanger.springbootbookmanager.controller;
 
-import com.bookmanger.springbootbookmanager.Book;
+import com.bookmanger.springbootbookmanager.entity.Book;
 import com.bookmanger.springbootbookmanager.service.BookService;
 import com.bookmanger.springbootbookmanager.Result;
 import jakarta.validation.Valid;

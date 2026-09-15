@@ -1,5 +1,6 @@
 package com.bookmanger.springbootbookmanager;
 
+import com.bookmanger.springbootbookmanager.entity.Book;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;

@@ -1,4 +1,4 @@
-package com.bookmanger.springbootbookmanager;
+package com.bookmanger.springbootbookmanager.entity;
 import jakarta.validation.constraints.NotBlank;
 
 public class Book {

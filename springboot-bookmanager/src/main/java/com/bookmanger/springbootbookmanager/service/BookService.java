@@ -1,6 +1,6 @@
 package com.bookmanger.springbootbookmanager.service;
 
-import com.bookmanger.springbootbookmanager.Book;
+import com.bookmanger.springbootbookmanager.entity.Book;
 import com.bookmanger.springbootbookmanager.mapper.BookMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 

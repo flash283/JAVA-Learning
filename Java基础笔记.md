@@ -4752,3 +4752,103 @@ return stack.isEmpty();
 | 算法 | 快慢指针判环 |
 | 算法 | 栈判断括号 |
 ---
+```markdown
+# Java 泛型入门 + 项目优化笔记
+
+**日期：2026年9月14日**
+
+---
+
+## 一、Java 泛型
+
+### 1. 泛型是什么
+
+类型参数化，用 `<T>` 作为类型的占位符，用的时候再指定具体类型。
+
+### 2. 泛型类
+
+```java
+public class Box<T> {
+    private T data;
+    public void setData(T data) { this.data = data; }
+    public T getData() { return data; }
+}
+
+Box<String> box = new Box<>();
+box.setData("hello");
+String s = box.getData();  // 不用强转
+```
+
+### 3. 多类型参数
+
+```java
+public class Pair<K, V> {
+    private K key;
+    private V value;
+
+    public Pair(K key, V value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public K getKey() { return key; }
+    public V getValue() { return value; }
+}
+
+Pair<String, Integer> p = new Pair<>("age", 18);
+```
+
+### 4. 泛型的好处
+
+| 好处 | 说明 |
+|------|------|
+| 类型安全 | 编译期检查，放错类型直接报错 |
+| 免强转 | 取出时不用 `(String)` 强转 |
+| 代码复用 | 一套代码支持多种类型 |
+
+---
+
+## 二、项目优化：entity 包
+
+### 包结构规范
+
+```
+com.bookmanger.springbootbookmanager/
+├── controller/    ← 接口层
+├── service/       ← 业务层
+├── mapper/        ← 数据库操作
+├── entity/        ← 实体类（Book、User）
+├── common/        ← Result
+└── exception/     ← GlobalException
+```
+
+### 移动文件后改 import
+
+1. `Book.java`、`User.java` 顶部包名改为 `entity`
+2. 引用它们的类改 import 为 `...entity.Book`、`...entity.User`
+3. IDEA 提示红字按 `Alt + Enter` 自动导入
+
+---
+
+## 三、今日算法
+
+| 题号 | 题目 | 方法 |
+|------|------|------|
+| 206 | 反转链表 | 三指针：`cur.next = pre` |
+| 704 | 二分查找 | `while(left<=right)` |
+
+### 反转链表易错点
+
+- `cur.next = pre` 才是反转指向
+- 顺序：记 next → 反转 → pre 后移 → cur 后移
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Java | 泛型类、多类型参数、泛型好处 |
+| 项目 | entity 包整理、分层规范 |
+| 算法 | 三指针反转、二分模板 |
+---
