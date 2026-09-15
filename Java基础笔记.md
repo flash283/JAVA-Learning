@@ -4852,3 +4852,79 @@ com.bookmanger.springbootbookmanager/
 | 项目 | entity 包整理、分层规范 |
 | 算法 | 三指针反转、二分模板 |
 ---
+```markdown
+# Java 泛型进阶 + 算法复习笔记
+
+**日期：2026年9月15日**
+
+---
+
+## 一、Java 泛型
+
+### 1. 泛型方法
+
+方法返回值前加 `<T>`，方法内可用 T：
+
+```java
+public <T> void printArray(T[] arr) {
+    for (T item : arr) {
+        System.out.println(item);
+    }
+}
+```
+
+调用时自动推断类型，`printArray(new String[]{...})` 自动 T=String。
+
+### 2. 泛型接口
+
+```java
+public interface Container<T> {
+    void add(T item);
+    T get(int index);
+}
+
+// 实现类指定类型
+public class StringContainer implements Container<String> {
+    public void add(String item) { ... }
+    public String get(int index) { ... }
+}
+```
+
+### 3. 三种泛型对比
+
+| 类型 | 位置 | 示例 |
+|------|------|------|
+| 泛型类 | 类名后 | `class Box<T>` |
+| 泛型方法 | 返回值前 | `public <T> void print(T t)` |
+| 泛型接口 | 接口名后 | `interface Container<T>` |
+
+---
+
+## 二、今日算法复习
+
+### 232 用栈实现队列
+
+两个栈：`s1` 入队，`s2` 出队。
+
+- push → 压入 s1
+- pop/peek → s2 空时把 s1 全倒入 s2，再从 s2 操作
+- empty → 两个都空
+
+### 225 用队列实现栈
+
+两个队列：q1 存栈元素，q2 临时中转。
+
+- push → 新元素入 q2，q1 全部倒入 q2，交换 q1、q2
+- pop → q1.poll()
+- top → q1.peek()
+- empty → q1.isEmpty()
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Java | 泛型方法、泛型接口 |
+| 算法 | 栈队列互转复习 |
+---
