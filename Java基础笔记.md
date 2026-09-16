@@ -4928,3 +4928,76 @@ public class StringContainer implements Container<String> {
 | Java | 泛型方法、泛型接口 |
 | 算法 | 栈队列互转复习 |
 ---
+```markdown
+# Java 通配符 + 算法笔记
+
+**日期：2026年9月16日**
+
+---
+
+## 一、Java 泛型通配符
+
+### 1. 三种通配符
+
+| 通配符 | 含义 | 示例 |
+|------|------|------|
+| `?` | 任意类型 | `List<?>` |
+| `? extends T` | T 或子类（上界） | `List<? extends Number>` |
+| `? super T` | T 或父类（下界） | `List<? super Integer>` |
+
+### 2. 记忆口诀
+
+**上界读、下界写**：
+- `? extends T`：适合读取（能保证是 T 的子类）
+- `? super T`：适合写入（能安全放入 T 类型）
+
+---
+
+## 二、项目优化
+
+删掉无用代码（旧 DAO、注释代码），跑一遍确认正常。
+
+---
+
+## 三、今日算法
+
+### 739 每日温度
+
+**方法**：单调栈，存下标
+
+```java
+Stack<Integer> stack = new Stack<>();
+for (int i = 0; i < n; i++) {
+    while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
+        int prev = stack.pop();
+        answer[prev] = i - prev;
+    }
+    stack.push(i);
+}
+```
+
+- 栈里存"还没找到更高温度"的下标
+- 每个下标进出栈一次，O(n)
+- 最后栈里剩下的答案默认 0
+
+### 150 逆波兰表达式求值
+
+**方法**：栈
+
+- 遇数字入栈
+- 遇运算符弹出两个数计算，结果入栈
+- 先弹出的是第二个操作数 `b`，后弹出的是第一个 `a`
+- 减法 `a-b`，除法 `a/b`
+
+**注意**：字符串比较用 `equals`，不能用 `==`。
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Java | 泛型通配符、上下界 |
+| 算法 | 单调栈 |
+| 算法 | 栈求后缀表达式 |
+---
