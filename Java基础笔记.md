@@ -5001,3 +5001,150 @@ for (int i = 0; i < n; i++) {
 | 算法 | 单调栈 |
 | 算法 | 栈求后缀表达式 |
 ---
+```markdown
+# Java 进阶 + AOP + 蓝桥杯笔记
+
+**日期：2026年9月17日**
+
+---
+
+## 一、Java 泛型擦除
+
+### 1. 什么是泛型擦除
+
+泛型只在**编译期**存在，编译后类型信息被擦除，变成原始类型（Object）。
+
+```java
+List<String> list = new ArrayList<>();
+list.add("hello");
+String s = list.get(0);
+```
+
+编译后：
+
+```java
+List list = new ArrayList();
+list.add("hello");
+String s = (String) list.get(0);  // 编译器自动加强转
+```
+
+### 2. 为什么擦除
+
+为了**兼容 Java 5 之前的老代码**，保证新老代码能互相调用。
+
+### 3. 擦除的影响
+
+- 运行期拿不到泛型类型
+- 不能 `new T()`、`T.class`
+- `List<String>` 和 `List<Integer>` 运行时是同一个类
+
+---
+
+## 二、AOP 日志切面
+
+### 1. 什么是 AOP
+
+面向切面编程，把**日志、事务、权限**等横切逻辑抽出来，统一处理，不侵入业务代码。
+
+### 2. 日志切面实现
+
+```java
+@Aspect
+@Component
+public class LogAspect {
+    private static final Logger log = LoggerFactory.getLogger(LogAspect.class);
+
+    @Around("execution(* com.bookmanger.springbootbookmanager.service.*.*(..))")
+    public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
+        String methodName = joinPoint.getSignature().getName();
+        log.info("开始执行：{}", methodName);
+        long start = System.currentTimeMillis();
+
+        Object result = joinPoint.proceed();
+
+        long cost = System.currentTimeMillis() - start;
+        log.info("执行结束：{}，耗时 {}ms", methodName, cost);
+        return result;
+    }
+}
+```
+
+### 3. 五种通知类型
+
+| 注解 | 时机 |
+|------|------|
+| `@Before` | 方法前 |
+| `@AfterReturning` | 正常返回后 |
+| `@AfterThrowing` | 抛异常后 |
+| `@After` | 方法结束后 |
+| `@Around` | 前后都包（最强大） |
+
+### 4. 关键方法
+
+| 方法 | 作用 |
+|------|------|
+| `getSignature().getName()` | 获取方法名 |
+| `proceed()` | 执行原方法 |
+| `getArgs()` | 获取参数 |
+
+### 5. 日志级别
+
+| 级别 | 用途 |
+|------|------|
+| debug | 调试细节 |
+| info | 正常操作 |
+| warn | 警告 |
+| error | 错误 |
+
+### 6. 日志输出位置
+
+默认控制台，配置文件加 `logging.file.name=logs/app.log` 可输出到文件。
+
+---
+
+## 三、蓝桥杯：洛谷 P1706 全排列
+
+### 和 LeetCode 的区别
+
+| | LeetCode | 洛谷 |
+|------|------|------|
+| 输入 | 方法参数 | 自己写 Scanner 读 |
+| 输出 | return | 自己打印 |
+| 类名 | Solution | Main |
+| 格式 | 宽松 | 严格要求（%5d） |
+
+### DFS 全排列模板
+
+```java
+static void dfs(int index) {
+    if (index == n) {
+        输出当前排列;
+        return;
+    }
+    for (int i = 1; i <= n; i++) {
+        if (used[i]) continue;
+        used[i] = true;
+        path[index] = i;
+        dfs(index + 1);
+        used[i] = false;  // 回溯
+    }
+}
+```
+
+### 经验
+
+- 洛谷 Java 内存限制严，全排列这类输出量大的题容易 MLE
+- 理解思路即可，重点掌握 DFS 回溯
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Java | 泛型擦除：编译期存在，运行期擦除 |
+| Spring | AOP 切面记录日志 |
+| 算法 | 49、202 复习 |
+| 蓝桥杯 | DFS 全排列 + 洛谷 IO 格式 |
+```
+
