@@ -5146,5 +5146,141 @@ static void dfs(int index) {
 | Spring | AOP 切面记录日志 |
 | 算法 | 49、202 复习 |
 | 蓝桥杯 | DFS 全排列 + 洛谷 IO 格式 |
+---
+```markdown
+# Stream 入门 + 蓝桥杯笔记
+
+**日期：2026年9月18日**
+
+---
+
+## 一、Java Stream API
+
+### 1. Stream 是什么
+
+Java 8 引入的**对集合进行函数式操作的工具**，不是 IO 流。
+
+### 2. 和 IO 流的区别
+
+| | IO 流 | Stream API |
+|------|------|------|
+| 作用 | 读写文件、网络 | 集合元素运算 |
+| 包 | `java.io` | `java.util.stream` |
+| 方向 | 输入/输出 | 无方向 |
+
+### 3. 创建 Stream
+
+```java
+List<String> list = Arrays.asList("a", "b", "c");
+
+list.stream();                       // 从集合
+Arrays.stream(new int[]{1, 2, 3});   // 从数组
+Stream.of("a", "b", "c");            // 直接创建
+```
+
+### 4. 常用操作
+
+| 操作 | 作用 | 示例 |
+|------|------|------|
+| `forEach` | 遍历 | `list.stream().forEach(System.out::println)` |
+| `filter` | 过滤 | `.filter(x -> x % 2 == 0)` |
+| `map` | 转换 | `.map(x -> x * 2)` |
+
+### 5. 示例
+
+```java
+List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6);
+
+list.stream().forEach(System.out::println);   // 1~6
+
+list.stream()
+    .filter(x -> x % 2 == 0)
+    .forEach(System.out::println);            // 2 4 6
+
+list.stream()
+    .map(x -> x * 2)
+    .forEach(System.out::println);            // 2 4 6 8 10 12
+```
+
+---
+
+## 二、今日算法
+
+### 217 存在重复元素
+
+```java
+HashSet<Integer> set = new HashSet<>();
+for (int num : nums) {
+    if (set.contains(num)) return true;
+    set.add(num);
+}
+return false;
+```
+
+### 349 两个数组的交集
+
+```java
+HashSet<Integer> set1 = new HashSet<>();
+HashSet<Integer> resultSet = new HashSet<>();
+for (int n : nums1) set1.add(n);
+for (int n : nums2) if (set1.contains(n)) resultSet.add(n);
+// resultSet 转 int[]
+```
+
+**为什么用两个 set**：set1 判断存在，resultSet 自动去重，职责分开。
+
+---
+
+## 三、蓝桥杯 P1036 选数
+
+### 题目
+
+从 n 个数里选 k 个，和为素数的方案数。
+
+### 代码
+
+```java
+static void dfs(int start, int count, int sum) {
+    if (count == k) {
+        if (isPrime(sum)) ans++;
+        return;
+    }
+    for (int i = start; i < n; i++) {
+        dfs(i + 1, count + 1, sum + nums[i]);
+    }
+}
+
+static boolean isPrime(int num) {
+    if (num < 2) return false;
+    for (int i = 2; i * i <= num; i++) {
+        if (num % i == 0) return false;
+    }
+    return true;
+}
+```
+
+### 和 P1706 对比
+
+| | P1706 全排列 | P1036 选数 |
+|------|------|------|
+| 选几个 | 全部 n 个 | 选 k 个 |
+| 终止条件 | `index == n` | `count == k` |
+| 判断 | 直接输出 | 素数和判断 |
+
+**核心一致**：选择 → 递归 → 撤销。
+
+### 素数判断
+
+试除法，从 2 试到 √n，`i * i <= num`。
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Java | Stream API 入门 |
+| 算法 | HashSet 判重、求交集 |
+| 蓝桥杯 | DFS 组合 + 素数判断 |
 ```
 
