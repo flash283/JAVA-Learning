@@ -5283,4 +5283,119 @@ static boolean isPrime(int num) {
 | 算法 | HashSet 判重、求交集 |
 | 蓝桥杯 | DFS 组合 + 素数判断 |
 ```
+```markdown
+# Stream 进阶 + 蓝桥杯笔记
 
+**日期：2026年9月19日**
+
+---
+
+## 一、Java Stream API
+
+### 1. 中间操作
+
+| 操作 | 作用 |
+|------|------|
+| `filter` | 过滤，保留满足条件的 |
+| `map` | 映射，把元素转成另一个值 |
+| `distinct` | 去重 |
+| `sorted` | 排序 |
+
+### 2. 方法引用
+
+```java
+list.stream().forEach(System.out::println);
+// 等价于 list.stream().forEach(x -> System.out.println(x));
+```
+
+`类名::方法名` 是 Lambda 的简写，条件：Lambda 体只是把参数原样传给方法。
+
+### 3. Lambda 排序
+
+```java
+list.sort((a, b) -> a.getAge() - b.getAge());  // 升序
+list.sort((a, b) -> b.getAge() - a.getAge());  // 降序
+```
+
+**记结论**：`a - b` 升序，`b - a` 降序。
+
+### 4. Comparable vs Comparator
+
+| | Comparable | Comparator |
+|------|------|------|
+| 位置 | 类内部实现 | 外部传入 |
+| 方法 | `compareTo` | `compare` |
+| 灵活性 | 一种排序 | 多种排序 |
+
+---
+
+## 二、今日算法
+
+### 290 单词规律
+
+**方法**：双 HashMap 双向映射
+
+- `map1`：char → word
+- `map2`：word → char
+- 长度不等直接返回 false
+- 字符串比较用 `equals`
+
+### 205 同构字符串
+
+和 290 完全一样，只是映射双方都是字符。
+
+### 双向映射的必要性
+
+```
+pattern = "abba", s = "dog dog dog dog"
+单向：a→dog, b→dog 都能放，返回 true ❌
+双向：dog 已映射到 a，再映射 b 冲突 → false ✅
+```
+
+---
+
+## 三、蓝桥杯 P1219 八皇后
+
+### 思路
+
+逐行放皇后，用三个数组标记冲突：
+
+| 数组 | 标记 |
+|------|------|
+| `col[j]` | 第 j 列 |
+| `diag1[row - j + n]` | 主对角线（左上到右下） |
+| `diag2[row + j]` | 副对角线（右上到左下） |
+
+### 对角线规律
+
+- 主对角线：`row - j` 相同（加 n 防负数）
+- 副对角线：`row + j` 相同
+
+### 模板
+
+```java
+static void dfs(int row) {
+    if (row == n) { 计数; return; }
+    for (int j = 0; j < n; j++) {
+        if (冲突) continue;
+        标记;
+        dfs(row + 1);
+        撤销标记;
+    }
+}
+```
+
+### 和 P1036 对比
+
+都是 DFS + 回溯，区别在"选什么"和"怎么判合法"。
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Java | Stream 中间操作、方法引用、Lambda 排序 |
+| 算法 | 双 HashMap 双向映射 |
+| 蓝桥杯 | DFS 八皇后 + 对角线技巧 |
+---
