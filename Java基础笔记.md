@@ -5399,3 +5399,109 @@ static void dfs(int row) {
 | 算法 | 双 HashMap 双向映射 |
 | 蓝桥杯 | DFS 八皇后 + 对角线技巧 |
 ---
+```markdown
+# Stream 终止操作 + 蓝桥杯笔记
+
+**日期：2026年9月20日**
+
+---
+
+## 一、Stream 终止操作
+
+### 1. collect 收集
+
+```java
+List<Integer> result = list.stream()
+    .filter(x -> x > 2)
+    .collect(Collectors.toList());   // 转 List
+    .collect(Collectors.toSet());    // 转 Set
+    .collect(Collectors.joining(",")); // 拼接字符串
+```
+
+### 2. count 统计
+
+```java
+long count = list.stream().filter(x -> x > 2).count();
+```
+
+### 3. reduce 归约
+
+```java
+int sum = list.stream().reduce(0, (a, b) -> a + b);
+```
+
+把流里所有元素合并成一个结果。
+
+### 4. 中间操作 vs 终止操作
+
+| | 中间操作 | 终止操作 |
+|------|------|------|
+| 返回 | 新的 Stream | 具体结果 |
+| 示例 | filter、map、sorted | collect、count、reduce |
+| 特点 | 惰性，不立即执行 | 触发执行 |
+
+---
+
+## 二、今日算法
+
+### 34 查找元素首末位置
+
+两次二分找左右边界。注意边界判断：
+
+- `f1` 找左边界：`left >= nums.length` 时越界
+- `f2` 找右边界：`right < 0` 时越界
+
+### 771 宝石与石头
+
+HashSet 存宝石，遍历石头判断。用 `contains`，O(1)。
+
+**Set vs Map**：
+
+| | Set | Map |
+|------|------|------|
+| 存 | 单个元素 | 键值对 |
+| 判断 | `contains` | `containsKey` |
+| 场景 | 去重、判存在 | 计数、映射 |
+
+---
+
+## 三、蓝桥杯 P1596 湖计数
+
+### 和岛屿数量的区别
+
+| | 岛屿数量 | 湖计数 |
+|------|------|------|
+| 方向 | 4 方向 | **8 方向** |
+| 字符 | '1' 和 '0' | 'W' 和 '.' |
+
+### 八方向数组
+
+```java
+int[] dx = {-1, -1, -1, 0, 0, 1, 1, 1};
+int[] dy = {-1, 0, 1, -1, 1, -1, 0, 1};
+```
+
+`dx` 是行变化（上-1、不动0、下+1），`dy` 是列变化（左-1、不动0、右+1），组合成八个方向。
+
+### 输入技巧
+
+```java
+grid[i] = sc.next().toCharArray();  // 读一行字符串转字符数组
+```
+
+### DFS 终止条件
+
+```java
+if (越界 || grid[i][j] != 'W') return;
+```
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Java | Stream collect、count、reduce |
+| 算法 | 二分左右边界（越界判断） |
+| 蓝桥杯 | 八方向 DFS 连通块 |
+---
