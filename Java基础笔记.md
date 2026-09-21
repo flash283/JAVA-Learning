@@ -5505,3 +5505,114 @@ if (越界 || grid[i][j] != 'W') return;
 | 算法 | 二分左右边界（越界判断） |
 | 蓝桥杯 | 八方向 DFS 连通块 |
 ---
+```markdown
+# Stream 综合 + 蓝桥杯 BFS 笔记
+
+**日期：2026年9月21日**
+
+---
+
+## 一、Stream 综合练习
+
+### 1. 链式操作
+
+```java
+List<String> result = list.stream()
+    .filter(s -> s.length() > 5)
+    .map(String::toUpperCase)
+    .sorted()
+    .collect(Collectors.toList());  // 最后必须 collect 收集
+```
+
+**注意**：中间操作返回 Stream，最后要终止操作才拿到结果。
+
+### 2. 常用终止操作
+
+| 操作 | 作用 |
+|------|------|
+| `collect(Collectors.toList())` | 收集成 List |
+| `collect(Collectors.joining(","))` | 拼接字符串 |
+| `count()` | 统计个数 |
+| `reduce(初始值, 运算)` | 归约求和等 |
+
+---
+
+## 二、LeetCode 复习
+
+| 题号 | 题目 | 要点 |
+|------|------|------|
+| 206 | 反转链表 | 三指针 |
+| 21 | 合并两个有序链表 | 虚拟头节点 + 双指针 |
+| 141 | 环形链表 | 快慢指针，判空 |
+| 20 | 有效的括号 | 栈，pop 后匹配 |
+| 232 | 用栈实现队列 | 两个栈互倒 |
+
+**易错点**：
+- 141 循环条件 `fast != null && fast.next != null`
+- 20 匹配成功后要 pop，最后判栈空
+- 232 s2 空时才把 s1 倒入 s2
+
+---
+
+## 三、蓝桥杯 P1443 马的遍历
+
+### BFS 求最短步数
+
+**核心**：队列一层层扩展，第一次到达即最短。
+
+```java
+static void bfs() {
+    Queue<int[]> queue = new LinkedList<>();
+    queue.offer(new int[]{startX, startY});
+    dist[startX][startY] = 0;
+
+    while (!queue.isEmpty()) {
+        int[] cur = queue.poll();
+        int x = cur[0], y = cur[1];
+        for (int d = 0; d < 8; d++) {
+            int nx = x + dx[d];
+            int ny = y + dy[d];
+            if (合法 && dist[nx][ny] == -1) {
+                dist[nx][ny] = dist[x][y] + 1;
+                queue.offer(new int[]{nx, ny});
+            }
+        }
+    }
+}
+```
+
+### 关键点
+
+| 要点 | 说明 |
+|------|------|
+| `dist` 初始 -1 | 表示未访问，起点设为 0 |
+| 坐标 -1 | 题目从 1 开始，数组从 0 开始 |
+| `dist[x][y] + 1` | 邻居步数 = 当前步数 + 1 |
+| 入队时标记 | `dist[nx][ny] = ...` 避免重复入队 |
+
+### 马的 8 个走法
+
+```java
+int[] dx = {-2, -2, -1, -1, 1, 1, 2, 2};
+int[] dy = {-1, 1, -2, 2, -2, 2, -1, 1};
+```
+
+### BFS vs DFS
+
+| | BFS | DFS |
+|------|------|------|
+| 数据结构 | 队列 | 栈/递归 |
+| 用途 | **最短路径** | 遍历、连通块 |
+| 到达某点 | 第一次即最短 | 不一定最短 |
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Java | Stream 链式操作 + 终止操作 |
+| 算法 | 链表、栈、队列复习 |
+| 蓝桥杯 | BFS 求最短步数 |
+| 方法 | 二维网格 BFS 模板 |
+---
