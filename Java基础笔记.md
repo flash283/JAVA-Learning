@@ -5616,3 +5616,110 @@ int[] dy = {-1, 1, -2, 2, -2, 2, -1, 1};
 | 蓝桥杯 | BFS 求最短步数 |
 | 方法 | 二维网格 BFS 模板 |
 ---
+```markdown
+# Lambda + 回溯组合笔记
+
+**日期：2026年9月22日**
+
+---
+
+## 一、Java Lambda 表达式
+
+### 1. 是什么
+
+匿名函数的简写，用来实现函数式接口。
+
+### 2. 语法
+
+```java
+(参数) -> { 方法体 }
+```
+
+### 3. 简化规则
+
+| 规则 | 完整写法 | 简化后 |
+|------|------|------|
+| 参数类型可省 | `(Integer a, Integer b)` | `(a, b)` |
+| 单参数括号可省 | `(x) -> ...` | `x -> ...` |
+| 单行体大括号可省 | `(a, b) -> { return a - b; }` | `(a, b) -> a - b` |
+
+### 4. 示例
+
+```java
+Runnable r = () -> System.out.println("hello");
+Function<Integer, Integer> f = x -> x * 2;
+Comparator<Integer> c = (a, b) -> a - b;
+```
+
+### 5. 函数式接口
+
+只有一个抽象方法的接口，Lambda 的载体。
+
+---
+
+## 二、今日算法
+
+### 3 无重复字符的最长子串
+
+滑动窗口 + HashSet，`right` 扩展，重复就移 `left`。
+
+```java
+max = Math.max(max, right - left + 1);
+```
+
+### 567 字符串的排列
+
+滑动窗口 + 计数数组，窗口大小固定为 s1 长度。
+
+```java
+count2[s2.charAt(i) - 'a']++;                // 右加
+count2[s2.charAt(i - s1.length()) - 'a']--;  // 左删
+if (Arrays.equals(count1, count2)) return true;
+```
+
+**核心**：`Arrays.equals` 比较两个计数数组，相等说明窗口是 s1 的排列。
+
+---
+
+## 三、回溯：组合 vs 排列
+
+### P1157 组合的输出
+
+```java
+dfs(1, 0);  // count 从 0 开始
+
+static void dfs(int start, int count) {
+    if (count == r) {
+        输出;
+        return;
+    }
+    for (int i = start; i <= n; i++) {
+        num[count] = i;
+        dfs(i + 1, count + 1);
+    }
+}
+```
+
+### 组合 vs 排列
+
+| | 组合 | 排列 |
+|------|------|------|
+| 顺序 | 不关心 | 关心 |
+| 参数 | `start` | `used` 标记 |
+| 例子 | P1157 | P1706 |
+
+### count 的含义
+
+`count` 表示**已经选了几个数**，从 0 开始，填满 r 个就输出。
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Java | Lambda 表达式、简化规则 |
+| 算法 | 滑动窗口（HashSet / 计数数组） |
+| 蓝桥杯 | 回溯组合输出 |
+| 对比 | 组合用 start，排列用 used |
+---
