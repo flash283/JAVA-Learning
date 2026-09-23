@@ -5723,3 +5723,119 @@ static void dfs(int start, int count) {
 | 蓝桥杯 | 回溯组合输出 |
 | 对比 | 组合用 start，排列用 used |
 ---
+```markdown
+# Lambda 方法引用 + 蓝桥杯笔记
+
+**日期：2026年9月23日**
+
+---
+
+## 一、Java Lambda 方法引用
+
+### 1. 四种类型
+
+| 类型 | 语法 | 示例 |
+|------|------|------|
+| 静态方法引用 | `类名::静态方法` | `Integer::parseInt` |
+| 实例方法引用 | `对象::方法` | `System.out::println` |
+| 类方法引用 | `类名::实例方法` | `String::toUpperCase` |
+| 构造器引用 | `类名::new` | `ArrayList::new` |
+
+### 2. 条件
+
+Lambda 体只是"把参数原样传给某个方法"时，可简化成方法引用。
+
+```java
+// Lambda
+list.forEach(s -> System.out.println(s));
+// 方法引用
+list.forEach(System.out::println);
+```
+
+---
+
+## 二、今日算法
+
+### 5 最长回文子串
+
+**方法**：中心扩展，分奇偶两种情况
+
+```java
+int len1 = expand(s, i, i);       // 奇数
+int len2 = expand(s, i, i + 1);   // 偶数
+int len = Math.max(len1, len2);
+start = i - (len - 1) / 2;
+```
+
+**易错**：`left >= 0` 不是 `left > 0`；要处理偶数长度。
+
+### 424 替换后的最长重复字符
+
+滑动窗口：窗口长度 - 出现最多字符数 ≤ k 则合法。
+
+```java
+if (right - left + 1 - maxCount > k) {
+    count[s.charAt(left) - 'A']--;
+    left++;
+}
+```
+
+---
+
+## 三、蓝桥杯 P1255 数楼梯
+
+### 思路
+
+斐波那契数列：`f(n) = f(n-1) + f(n-2)`
+
+| n | f(n) |
+|------|------|
+| 1 | 1 |
+| 2 | 2 |
+| 3 | 3 |
+| 4 | 5 |
+
+### 为什么用 BigInteger
+
+n 最大 5000，结果超出 long 范围。
+
+### BigInteger 常用方法
+
+| 方法 | 作用 |
+|------|------|
+| `BigInteger.ONE` | 1 |
+| `BigInteger.valueOf(2)` | 2 |
+| `a.add(b)` | 加 |
+| `a.multiply(b)` | 乘 |
+| `a.compareTo(b)` | 比较 |
+
+**注意**：没有 `BigInteger.TWO`，要用 `valueOf`。
+
+### 代码
+
+```java
+if (n <= 2) {
+    System.out.println(n);
+    return;
+}
+BigInteger a = BigInteger.ONE;
+BigInteger b = BigInteger.valueOf(2);
+for (int i = 3; i <= n; i++) {
+    BigInteger c = a.add(b);
+    a = b;
+    b = c;
+}
+System.out.println(b);
+```
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Java | Lambda 方法引用四种类型 |
+| 算法 | 中心扩展求回文 |
+| 算法 | 滑动窗口 + 计数 |
+| 蓝桥杯 | BigInteger 处理大数 |
+---
