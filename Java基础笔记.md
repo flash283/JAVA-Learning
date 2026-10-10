@@ -6027,3 +6027,57 @@ CREATE UNIQUE INDEX idx_isbn ON books(isbn);     -- ISBN 唯一
 | MySQL | 加/不加索引的场景 |
 | 项目 | books 加 author、isbn 索引 |
 ---
+```markdown
+# MySQL 索引失效笔记
+
+**日期：2026年10月10日**
+
+---
+
+## 一、索引失效的常见场景
+
+| 场景 | 例子 | 原因 |
+|------|------|------|
+| **`LIKE '%xx%'`** | `WHERE author LIKE '%李%'` | 以 % 开头无法用索引定位 |
+| **列上做运算** | `WHERE id + 1 = 5` | 索引存的是原值，运算后无法匹配 |
+| **列上用函数** | `WHERE YEAR(create_time) = 2026` | 函数改变了列的值 |
+| **类型隐式转换** | `WHERE phone = 13800138000`（phone 是字符串） | 字符串转数字，索引失效 |
+| **`OR` 连接** | `WHERE id = 1 OR name = 'x'`（name 无索引） | 一边没索引，整体失效 |
+| **不满足最左前缀** | 联合索引 `(a,b,c)` 跳过 a 查 b | 联合索引必须从左到右使用 |
+| **`!=` / `<>`** | `WHERE id != 5` | 可能失效，视情况 |
+
+---
+
+## 二、用 EXPLAIN 验证
+
+```sql
+EXPLAIN SELECT * FROM books WHERE author = '李明';      -- key: idx_author（走索引）
+EXPLAIN SELECT * FROM books WHERE author LIKE '%李%';   -- key: NULL（失效）
+EXPLAIN SELECT * FROM books WHERE id + 1 = 5;           -- key: NULL（失效）
+```
+
+**看 `key` 列**：
+- 显示索引名 → 走了索引
+- 显示 `NULL` → 索引失效
+
+---
+
+## 三、如何避免
+
+| 问题 | 解决 |
+|------|------|
+| `LIKE '%xx%'` | 尽量用 `LIKE 'xx%'`（前缀匹配） |
+| 列上运算 | 把运算移到等号右边 |
+| 列上函数 | 用范围查询代替 |
+| 类型转换 | 保证传入类型和列类型一致 |
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| MySQL | 索引失效的 7 种常见场景 |
+| MySQL | EXPLAIN 看 key 判断是否走索引 |
+| 优化 | 避免列上运算、函数、% 开头模糊 |
+---
