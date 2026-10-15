@@ -6345,3 +6345,108 @@ SELECT * FROM books WHERE id = 3 FOR UPDATE;
 | MySQL | 锁兼容性：读读兼容，其余互斥 |
 | MySQL | 乐观锁 vs 悲观锁 |
 ---
+```markdown
+# Redis 入门笔记
+
+**日期：2026年10月15日**
+
+---
+
+## 一、Redis 是什么
+
+**内存数据库**，数据存在内存里，读写极快，常用来做缓存。
+
+### 为什么快
+
+- 数据存内存，不用读磁盘
+- 单线程模型，避免锁竞争
+- 支持多种数据结构
+
+---
+
+## 二、安装和启动（Windows）
+
+1. GitHub 下载 `Redis-x64-5.0.14.1.zip`
+2. 解压到 `D:\Redis`
+3. 双击 `redis-server.exe` 启动，看到 `Ready to accept connections` 就行
+4. 新开命令行窗口，进 `D:\Redis`，运行 `redis-cli.exe`
+5. `ping` 返回 `PONG` 就是连上了
+
+**注意**：`redis-server.exe` 窗口不能关，关了 Redis 就停了。
+
+---
+
+## 三、String 类型命令
+
+| 命令 | 作用 |
+|------|------|
+| `SET key value` | 设置 |
+| `GET key` | 获取 |
+| `SETEX key 秒 value` | 设置并指定过期时间 |
+| `SETNX key value` | 不存在才设置 |
+| `INCR key` | 自增 1 |
+| `INCRBY key n` | 自增 n |
+| `DECR key` | 自减 1 |
+| `INCRBYFLOAT key n` | 浮点自增 |
+| `DEL key` | 删除 |
+
+### 示例
+
+```
+SET name "张三"
+GET name
+SETEX code 60 "123456"
+INCR age
+INCRBY age 2
+DECR age
+```
+
+**浮点精度问题**：`INCRBYFLOAT` 可能出现 `10.599999999999996`，是浮点数正常误差。
+
+---
+
+## 四、项目接入 Redis
+
+### 1. pom.xml 加依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```
+
+### 2. application.properties 配置
+
+```properties
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+```
+
+### 3. 测试连接
+
+```java
+@Autowired
+private RedisTemplate<String, String> redisTemplate;
+
+@PostConstruct
+public void testRedis() {
+    redisTemplate.opsForValue().set("test", "hello");
+    System.out.println(redisTemplate.opsForValue().get("test"));
+}
+```
+
+控制台打印 `hello` 就说明连接成功。
+
+**注意**：Redis 是懒加载，不主动调用不会真连。测试完把测试代码删掉。
+
+---
+
+## 五、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Redis | 是什么、为什么快、安装启动 |
+| Redis | String 类型常用命令 |
+| 项目 | 加 Redis 依赖、配置、测试连接 |
+---
