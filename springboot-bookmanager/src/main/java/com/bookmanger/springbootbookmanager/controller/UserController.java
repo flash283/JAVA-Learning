@@ -2,9 +2,11 @@ package com.bookmanger.springbootbookmanager.controller;
 
 
 import com.bookmanger.springbootbookmanager.Result;
+import com.bookmanger.springbootbookmanager.entity.Book;
 import com.bookmanger.springbootbookmanager.entity.User;
 import com.bookmanger.springbootbookmanager.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,6 +51,18 @@ public class UserController {
             return Result.success("删除成功");
         }
         return Result.error("删除失败");
+    }
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @GetMapping("/testRedis")
+    public String testRedis() {
+        Book book = new Book();
+        book.setId(1);
+        book.setTitle("数据结构");
+        redisTemplate.opsForValue().set("test:book", book);
+        return "测试成功，去Redis里看";
     }
 
 

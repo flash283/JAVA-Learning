@@ -6580,3 +6580,102 @@ ZRANGE rank 0 -1 WITHSCORES   → 李四 85 张三 90
 | Redis | Hash、List、Set、ZSet 常用命令 |
 | Redis | 五种数据类型适用场景 |
 ---
+```markdown
+# Redis Java 客户端配置笔记
+
+
+```markdown
+# Redis 客户端实操笔记
+
+**日期：2026年10月18日**
+
+---
+
+## 一、RedisTemplate vs StringRedisTemplate
+
+| | `RedisTemplate` | `StringRedisTemplate` |
+|------|------|------|
+| 默认序列化 | JDK 序列化（Redis里看是乱码 `\xac\xed`） | String 序列化（明文） |
+| 适用场景 | 存 Java 对象（如 Book、User） | 存纯字符串（验证码、token） |
+| Spring 自动配置 | 需手动配 JSON 序列化器 | 自动配好，直接注入用 |
+| 存对象方式 | 配好后直接 `set`，自动转 JSON | 必须手动把对象转成 JSON 字符串再 `set` |
+
+---
+
+## 二、RedisConfig 序列化配置
+
+如果不配置，直接存对象在 Redis 客户端里会看到乱码（`\xac\xed...`）。
+
+```java
+@Configuration
+public class RedisConfig {
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        // Key 用 String 序列化
+        template.setKeySerializer(new StringRedisSerializer());
+        // Value 用 JSON 序列化（核心，转成好看的对象格式）
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        template.afterPropertiesSet(); // 必须调用，完成初始化
+        return template;
+    }
+}
+```
+
+**关键点**：
+- `GenericJackson2JsonRedisSerializer`：存对象时自动转成 JSON 字符串，取出时自动转回对象。
+- `afterPropertiesSet()`：Spring 生命周期方法，告诉框架配置完成，进行初始化。手动 `new` 的 Bean 必须调用。
+- **`@class` 字段**：存入的 JSON 中会多出 `{"@class":"com...Book", ...}`，这是序列化器自动加上的类全限定名，用于以后反序列化时还原成正确的 Java 对象。
+
+---
+
+## 三、项目中的实际使用
+
+```java
+@Autowired
+private RedisTemplate<String, Object> redisTemplate;
+
+@Autowired
+private StringRedisTemplate stringRedisTemplate;
+
+public void test() {
+    // 1. 用 StringRedisTemplate 存字符串
+    stringRedisTemplate.opsForValue().set("test:name", "张三");
+    
+    // 2. 用 RedisTemplate 存对象
+    Book book = new Book();
+    book.setId(1);
+    book.setTitle("数据结构");
+    redisTemplate.opsForValue().set("test:book", book);
+}
+```
+
+**注意**：Windows 版 Redis 默认无密码，本地开发不需要设。线上服务器必须设密码。
+
+---
+
+## 四、常见问题排查
+
+### 1. 中文乱码
+在 `redis-cli` 里 `GET test:book`，中文字符显示为 `\xe6\x95\xb0`。这只是 cmd 窗口 GBK 编码显示不了 UTF-8 的问题。数据没坏，代码里取出来是正常中文，或者用 RDM 等图形化工具看也正常。
+
+### 2. `Unable to connect to Redis`
+检查 `redis-server.exe` 黑窗口是不是关了。
+
+---
+
+## 五、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Redis | Spring Data Redis 客户端使用 |
+| Redis | 序列化器配置、解决乱码、`@class` 机制 |
+| Spring | RedisTemplate 注入与测试 |
+| 排错 | 命令行中文乱码并非数据损坏 |
+---

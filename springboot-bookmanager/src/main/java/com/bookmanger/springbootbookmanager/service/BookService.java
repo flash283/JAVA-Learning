@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -61,6 +62,10 @@ public class BookService {
     public List<Book> queryByBorrowed(boolean borrowed) {
         return mapper.queryByBorrowed(borrowed);
     }
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
 
 
 }
