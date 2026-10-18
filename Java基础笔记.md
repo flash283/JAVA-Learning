@@ -6450,3 +6450,133 @@ public void testRedis() {
 | Redis | String 类型常用命令 |
 | 项目 | 加 Redis 依赖、配置、测试连接 |
 ---
+```markdown
+# Redis 数据类型笔记
+
+**日期：2026年10月16日**
+
+---
+
+## 一、Key 的层级格式
+
+用冒号分隔，表示层级：
+
+```
+项目名:业务名:类型:id
+```
+
+示例：
+
+```
+user:1:name      → 用户1的姓名
+book:5:title     → 书籍5的标题
+```
+
+好处是结构清晰，方便管理和查找。
+
+---
+
+## 二、Hash 类型
+
+存对象的属性，类似 Java 的 Map。
+
+| 命令 | 作用 |
+|------|------|
+| `HSET key field value` | 设置字段 |
+| `HGET key field` | 获取字段 |
+| `HGETALL key` | 获取所有字段和值 |
+| `HDEL key field` | 删除字段 |
+| `HKEYS key` | 获取所有字段名 |
+| `HVALS key` | 获取所有值 |
+| `HEXISTS key field` | 判断字段是否存在 |
+
+```
+HSET user name 张三 age 18
+HGET user name          → 张三
+HGETALL user            → name 张三 age 18
+HDEL user age
+```
+
+---
+
+## 三、List 类型
+
+有序、可重复，可以从两端插入和弹出（队列 / 栈）。
+
+| 命令 | 作用 |
+|------|------|
+| `LPUSH key v1 v2` | 左边插入 |
+| `RPUSH key v1 v2` | 右边插入 |
+| `LPOP key` | 左边弹出 |
+| `RPOP key` | 右边弹出 |
+| `LRANGE key start stop` | 范围查询 |
+| `LLEN key` | 长度 |
+
+```
+LPUSH list a b c        → c b a
+LRANGE list 0 -1        → c b a
+RPUSH list d            → c b a d
+RPOP list               → d
+```
+
+---
+
+## 四、Set 类型
+
+无序、不可重复，适合去重和集合运算。
+
+| 命令 | 作用 |
+|------|------|
+| `SADD key v1 v2` | 添加元素 |
+| `SMEMBERS key` | 获取所有元素 |
+| `SREM key v1` | 删除元素 |
+| `SISMEMBER key v` | 判断是否存在 |
+| `SCARD key` | 元素个数 |
+
+```
+SADD tags java mysql redis
+SMEMBERS tags           → java mysql redis
+SISMEMBER tags java     → 1
+```
+
+---
+
+## 五、ZSet 类型（SortedSet）
+
+有序、不可重复，每个元素带一个分数，按分数排序。
+
+| 命令 | 作用 |
+|------|------|
+| `ZADD key score member` | 添加元素和分数 |
+| `ZRANGE key start stop` | 按分数升序查询 |
+| `ZREVRANGE key start stop` | 按分数降序查询 |
+| `ZSCORE key member` | 获取元素分数 |
+| `ZREM key member` | 删除元素 |
+
+```
+ZADD rank 90 张三 85 李四
+ZRANGE rank 0 -1 WITHSCORES   → 李四 85 张三 90
+```
+
+---
+
+## 六、五种类型对比
+
+| 类型 | 特点 | 场景 |
+|------|------|------|
+| String | 最简单的键值对 | 缓存、计数 |
+| Hash | 存对象属性 | 用户信息 |
+| List | 有序可重复 | 队列、栈 |
+| Set | 无序不重复 | 去重、集合运算 |
+| ZSet | 有序不重复，带分数 | 排行榜 |
+
+---
+
+## 七、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Redis | Key 层级格式 |
+| Redis | Hash、List、Set、ZSet 常用命令 |
+| Redis | 五种数据类型适用场景 |
+---
