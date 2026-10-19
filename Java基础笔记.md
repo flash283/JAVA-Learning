@@ -6679,3 +6679,98 @@ public void test() {
 | Spring | RedisTemplate 注入与测试 |
 | 排错 | 命令行中文乱码并非数据损坏 |
 ---
+```markdown
+# Redis 缓存实战笔记
+
+**日期：2026年10月19日**
+
+---
+
+## 一、缓存的作用
+
+| 作用 | 说明 |
+|------|------|
+| **变快** | Redis 存内存，读写速度远快于 MySQL（读硬盘） |
+| **抗压** | 挡住 90% 的读请求，保护数据库不被打崩 |
+| **省资源** | 让数据库腾出精力处理写操作 |
+
+---
+
+## 二、Cache Aside 模式（旁路缓存）
+
+企业中最常用的缓存模式。
+
+### 1. 读操作（查询）
+**先查 Redis，没有再去查 MySQL，查完写回 Redis。**
+
+```java
+public Book queryById(int id) {
+    String key = "cache:book:" + id;
+    
+    // 1. 先查缓存
+    Book cacheBook = (Book) redisTemplate.opsForValue().get(key);
+    if (cacheBook != null) {
+        return cacheBook; // 命中，直接返回
+    }
+    
+    // 2. 缓存未命中，查数据库
+    Book book = mapper.queryById(id);
+    
+    // 3. 查到后写入缓存（设置过期时间兜底）
+    if (book != null) {
+        redisTemplate.opsForValue().set(key, book, 30, TimeUnit.MINUTES);
+    }
+    return book;
+}
+```
+
+### 2. 写操作（增删改）
+**先操作 MySQL，成功后再删除 Redis 缓存。**
+
+```java
+public boolean updateBook(int id, Book book) {
+    book.setId(id);
+    boolean success = mapper.updateBook(book) > 0;
+    
+    if (success) {
+        // 数据库更新成功，删除缓存
+        redisTemplate.delete("cache:book:" + id);
+    }
+    return success;
+}
+
+public boolean deleteBook(int id) {
+    boolean success = mapper.deleteBook(id) > 0;
+    if (success) {
+        redisTemplate.delete("cache:book:" + id);
+    }
+    return success;
+}
+```
+
+---
+
+## 三、核心疑问解答
+
+### 1. 为什么写操作一定要先去 MySQL？
+- **持久化**：Redis 内存断电会丢，MySQL 存磁盘才安全。
+- **一致性**：先确保数据库改成功，再处理缓存。如果先改 Redis，数据库没改成功，就会产生脏数据。
+
+### 2. 为什么写操作是“删除缓存”而不是“更新缓存”？
+- 并发写的情况下，更新缓存可能导致旧值覆盖新值（数据错乱）。
+- 删除缓存更安全，让下一次读请求去重新加载最新数据。
+
+### 3. 为什么要给缓存设置过期时间？
+- 兜底策略。即使代码漏删了缓存，30 分钟后也会自动失效，防止数据错太久。
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| 缓存 | 缓解数据库压力，提高查询速度 |
+| 模式 | Cache Aside：读先查缓存，写先改库并删缓存 |
+| 原则 | MySQL 是绝对数据源，Redis 只是副本 |
+| 配置 | 序列化、过期时间设置 |
+---

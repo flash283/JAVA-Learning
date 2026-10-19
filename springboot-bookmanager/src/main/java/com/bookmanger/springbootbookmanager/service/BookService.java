@@ -6,10 +6,12 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -17,17 +19,28 @@ public class BookService {
     @Autowired
     private BookMapper mapper;
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     public void addBook(Book book) {
         mapper.addBook(book);
     }
 
     public boolean deleteBook(int id) {
-        return mapper.deleteBook(id) > 0;
+        boolean success = mapper.deleteBook(id) > 0;
+        if (success) {
+            redisTemplate.delete("cache:book:" + id);
+        }
+        return success;
     }
 
     public boolean updateBook(int id, Book book) {
         book.setId(id);
-        return mapper.updateBook(book) > 0;
+        boolean success = mapper.updateBook(book) > 0;
+        if (success) {
+            redisTemplate.delete("cache:book:" + id);
+        }
+        return success;
     }
 
     public List<Book> queryAll() {
@@ -35,7 +48,20 @@ public class BookService {
     }
 
     public Book queryById(int id) {
-        return mapper.queryById(id);
+          String key="cache:book:"+id;
+           Book cacheBook=(Book) redisTemplate.opsForValue().get(key);
+
+           if(cacheBook!=null){
+               return cacheBook;
+           }
+
+           Book book=mapper.queryById(id);
+
+           if(book!=null){
+               redisTemplate.opsForValue().set(key,book,30, TimeUnit.MINUTES);
+           }
+
+           return book;
     }
 
     public List<Book> queryByTitle(String title) {
@@ -63,8 +89,8 @@ public class BookService {
         return mapper.queryByBorrowed(borrowed);
     }
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+
+
 
 
 
