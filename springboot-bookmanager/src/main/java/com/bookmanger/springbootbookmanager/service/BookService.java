@@ -48,20 +48,32 @@ public class BookService {
     }
 
     public Book queryById(int id) {
-          String key="cache:book:"+id;
-           Book cacheBook=(Book) redisTemplate.opsForValue().get(key);
+        String key = "cache:book:" + id;
 
-           if(cacheBook!=null){
-               return cacheBook;
-           }
+        // 1. 查缓存，先用 Object 接
+        Object cacheObj = redisTemplate.opsForValue().get(key);
 
-           Book book=mapper.queryById(id);
+        if (cacheObj != null) {
+            // 如果命中了空值（防穿透存的空字符串），直接返回 null
+            if (cacheObj instanceof String && "".equals(cacheObj)) {
+                return null;
+            }
+            // 否则才是真正的 Book 对象
+            return (Book) cacheObj;
+        }
 
-           if(book!=null){
-               redisTemplate.opsForValue().set(key,book,30, TimeUnit.MINUTES);
-           }
+        // 2. 查数据库
+        Book book = mapper.queryById(id);
 
-           return book;
+        if (book != null) {
+            // 3.1 数据库有，存入缓存
+            redisTemplate.opsForValue().set(key, book, 30, TimeUnit.MINUTES);
+        } else {
+            // 3.2 数据库没有（防穿透），存入空字符串，2分钟过期
+            redisTemplate.opsForValue().set(key, "", 2, TimeUnit.MINUTES);
+        }
+
+        return book;
     }
 
     public List<Book> queryByTitle(String title) {
