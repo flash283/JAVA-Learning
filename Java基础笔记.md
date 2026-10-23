@@ -6853,3 +6853,121 @@ public Book queryById(int id) {
 | 实战 | 缓存空值解决穿透 |
 | 细节 | 区分 `Object` 接收避免 ClassCastException，空值短过期 |
 ---
+这是把昨天（缓存穿透）和今天（击穿、雪崩）结合在一起的**完整版 Redis 缓存三大问题笔记**：
+
+```markdown
+# Redis 缓存三大问题及代码实战笔记
+
+**日期：2026年10月20日 - 10月23日**
+
+---
+
+## 一、缓存三大经典问题及解决方案
+
+| 问题 | 产生原因 | 后果 | 解决方案 |
+|------|------|------|------|
+| **缓存穿透** | 查询**不存在**的数据，缓存和数据库都没有 | 恶意请求每次都打到数据库 | 1. **缓存空值**<br>2. 布隆过滤器 |
+| **缓存击穿** | 某个**热点 Key** 突然过期 | 大量并发瞬间打到数据库 | 1. **互斥锁**<br>2. 逻辑过期 |
+| **缓存雪崩** | **大量 Key 同时过期** 或 Redis 宕机 | 所有请求全打到数据库 | 1. **过期时间加随机值**<br>2. 高可用集群 |
+
+---
+
+## 二、完整代码实现（穿透 + 击穿 + 雪崩）
+
+这是结合了三种问题解决方案的最终版 `queryById` 方法：
+
+```java
+public Book queryById(int id) {
+    String key = "cache:book:" + id;
+    
+    // 使用 while 循环重试，防止递归导致栈溢出
+    while (true) {
+        // 1. 查缓存（解决缓存雪崩中 Redis 撑住的问题）
+        Object cacheObj = redisTemplate.opsForValue().get(key);
+        if (cacheObj != null) {
+            // 解决缓存穿透：如果命中空字符串，直接返回 null
+            if (cacheObj instanceof String && "".equals(cacheObj)) {
+                return null;
+            }
+            // 命中正常对象，直接返回
+            return (Book) cacheObj;
+        }
+        
+        // 2. 缓存未命中，尝试获取互斥锁（解决缓存击穿）
+        String lockKey = "lock:book:" + id;
+        // setIfAbsent 相当于 Redis 的 setnx 命令，10秒过期防止死锁
+        Boolean isLock = redisTemplate.opsForValue().setIfAbsent(lockKey, "1", 10, TimeUnit.SECONDS);
+        
+        if (Boolean.TRUE.equals(isLock)) {
+            // 3. 拿到锁了，去查数据库并重建缓存
+            try {
+                Book book = mapper.queryById(id);
+                if (book != null) {
+                    // 解决缓存雪崩：过期时间加 0~5 分钟的随机值，避免同时失效
+                    long time = 30 + new Random().nextInt(6);
+                    redisTemplate.opsForValue().set(key, book, time, TimeUnit.MINUTES);
+                } else {
+                    // 解决缓存穿透：数据库没有，存入空值，2分钟过期
+                    redisTemplate.opsForValue().set(key, "", 2, TimeUnit.MINUTES);
+                }
+                return book;
+            } finally {
+                // 4. 无论成功失败，必须在 finally 中释放锁
+                redisTemplate.delete(lockKey);
+            }
+        } else {
+            // 没拿到锁，说明其他线程在重建，休眠 50ms 后重新进入 while 循环查缓存
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+---
+
+## 三、关键细节解析
+
+### 1. 为什么用 while 循环不用递归？
+递归 `return queryById(id)` 如果并发极高，会导致 JVM 方法调用栈越压越深，引发 `StackOverflowError`（栈溢出）。使用 `while(true)` 每次循环都在同一层级，非常安全。
+
+### 2. 为什么释放锁要写在 finally 里？
+如果在 `try` 块里查数据库或写缓存时抛出异常（比如数据库连接断开），没有 `finally` 的话，锁就永远留在 Redis 里了（死锁）。写在 `finally` 里保证无论发生什么，锁都会被删掉。
+
+### 3. `setIfAbsent` 的作用
+这是 Redis 的 `SETNX`（SET if Not eXists）命令。只有 key 不存在时才能设置成功，返回 `true` 表示拿到了锁；返回 `false` 表示别人已经拿到锁了。这利用了 Redis 单线程的特性，实现了分布式锁。
+
+### 4. 为什么要加 `time = 30 + new Random().nextInt(6)`？
+如果大量缓存都设成固定的 30 分钟，当这 30 分钟一到，大量 key 同时失效（雪崩）。加个 0~5 分钟的随机数，把它们失效的时间点打散，数据库就能平稳应对。
+
+---
+
+## 四、其他问题更新/删除的防坑
+
+在 `updateBook` 和 `deleteBook` 时，必须**先更新数据库，成功后再删除缓存**：
+
+```java
+public boolean updateBook(int id, Book book) {
+    book.setId(id);
+    boolean success = mapper.updateBook(book) > 0;
+    if (success) {
+        // 必须删缓存，让下次查询拉取最新数据
+        redisTemplate.delete("cache:book:" + id);
+    }
+    return success;
+}
+```
+
+---
+
+## 五、总结
+
+| 分类 | 内容 |
+|------|------|
+| 缓存 | 穿透（空值）、击穿（互斥锁）、雪崩（随机时间）综合实战 |
+| 分布式锁 | `setIfAbsent` (setnx) 及 `finally` 释放锁 |
+| 规范 | 企业级代码避免使用递归重试，改用 `while` 循环 |
+---

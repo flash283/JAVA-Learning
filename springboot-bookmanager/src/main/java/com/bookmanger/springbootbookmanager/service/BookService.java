@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 
@@ -50,30 +51,41 @@ public class BookService {
     public Book queryById(int id) {
         String key = "cache:book:" + id;
 
-        // 1. 查缓存，先用 Object 接
-        Object cacheObj = redisTemplate.opsForValue().get(key);
 
+        Object cacheObj = redisTemplate.opsForValue().get(key);
         if (cacheObj != null) {
-            // 如果命中了空值（防穿透存的空字符串），直接返回 null
-            if (cacheObj instanceof String && "".equals(cacheObj)) {
-                return null;
-            }
-            // 否则才是真正的 Book 对象
+            if (cacheObj instanceof String && "".equals(cacheObj)) return null;
             return (Book) cacheObj;
         }
 
-        // 2. 查数据库
-        Book book = mapper.queryById(id);
 
-        if (book != null) {
-            // 3.1 数据库有，存入缓存
-            redisTemplate.opsForValue().set(key, book, 30, TimeUnit.MINUTES);
-        } else {
-            // 3.2 数据库没有（防穿透），存入空字符串，2分钟过期
-            redisTemplate.opsForValue().set(key, "", 2, TimeUnit.MINUTES);
+        String lockKey = "lock:book:" + id;
+
+        Boolean isLock = redisTemplate.opsForValue().setIfAbsent(lockKey, "1", 10, TimeUnit.SECONDS);
+
+        if (Boolean.FALSE.equals(isLock)) {
+
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
+            return queryById(id);
         }
 
-        return book;
+
+        try {
+            Book book = mapper.queryById(id);
+            if (book != null) {
+                long time = 30 + new Random().nextInt(6);
+                redisTemplate.opsForValue().set(key, book, time, TimeUnit.MINUTES);
+            } else {
+                redisTemplate.opsForValue().set(key, "", 2, TimeUnit.MINUTES);
+            }
+            return book;
+        } finally {
+
+            redisTemplate.delete(lockKey);
+        }
     }
 
     public List<Book> queryByTitle(String title) {
@@ -88,22 +100,17 @@ public class BookService {
         return mapper.returnBook(id) > 0;
     }
 
-    public  List<Book> queryByPage(int page, int size){
-        int offset=(page-1)*size;
-        return mapper.queryByPage(offset,size);
+    public List<Book> queryByPage(int page, int size) {
+        int offset = (page - 1) * size;
+        return mapper.queryByPage(offset, size);
     }
 
-    public List<Book> queryByAuthor(String author){
+    public List<Book> queryByAuthor(String author) {
         return mapper.queryByAuthor(author);
     }
 
     public List<Book> queryByBorrowed(boolean borrowed) {
         return mapper.queryByBorrowed(borrowed);
     }
-
-
-
-
-
-
 }
+
