@@ -1,7 +1,7 @@
 package com.bookmanger.springbootbookmanager.controller;
 
 
-import com.bookmanger.springbootbookmanager.Result;
+import com.bookmanger.springbootbookmanager.common.Result;
 import com.bookmanger.springbootbookmanager.entity.Book;
 import com.bookmanger.springbootbookmanager.entity.User;
 import com.bookmanger.springbootbookmanager.service.UserService;

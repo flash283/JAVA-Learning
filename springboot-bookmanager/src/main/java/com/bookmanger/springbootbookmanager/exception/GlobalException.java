@@ -1,6 +1,6 @@
 package com.bookmanger.springbootbookmanager.exception;
 
-import com.bookmanger.springbootbookmanager.Result;
+import com.bookmanger.springbootbookmanager.common.Result;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

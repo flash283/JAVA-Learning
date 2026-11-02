@@ -1,5 +1,6 @@
 package com.bookmanger.springbootbookmanager.service;
 
+import com.bookmanger.springbootbookmanager.common.JwtUtil;
 import com.bookmanger.springbootbookmanager.entity.User;
 import com.bookmanger.springbootbookmanager.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class UserService {
         if (!dbUser.getPassword().equals(user.getPassword())) {
             return "密码错误";
         }
-        return "登录成功";
+        return JwtUtil.generateToken(dbUser.getId(), dbUser.getUsername());
     }
 
     public List<User> queryAll() {

@@ -1,4 +1,4 @@
-package com.bookmanger.springbootbookmanager;
+package com.bookmanger.springbootbookmanager.common;
 
 public class Result <T> {
     private int code;

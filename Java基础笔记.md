@@ -6971,3 +6971,122 @@ public boolean updateBook(int id, Book book) {
 | 分布式锁 | `setIfAbsent` (setnx) 及 `finally` 释放锁 |
 | 规范 | 企业级代码避免使用递归重试，改用 `while` 循环 |
 ---
+```markdown
+# JWT 认证入门笔记
+
+**日期：2026年11月2日**
+
+---
+
+## 一、JWT 是什么
+
+**JSON Web Token**：一种加密的字符串（长得像 `xxxxx.yyyyy.zzzzz`），用于前后端分离项目中的**无状态认证**。
+
+### 1. JWT 的三部分结构
+1. **Header（头部）**：声明算法（如 HS256）和类型。
+2. **Payload（载荷）**：存放用户数据（如 `userId`、`username`）及过期时间。
+3. **Signature（签名）**：防止数据被篡改的防伪标识。
+
+### 2. 为什么改数据签名就不对了？
+签名算法：**`签名 = 加密(Header + Payload + 服务器密钥)`**。
+因为 Payload 参与了签名计算，黑客虽然能改数据，但**没有服务器密钥**，算不出新的正确签名，服务器验证时就会发现签名对不上，直接拒绝。
+
+---
+
+## 二、Spring Boot 集成 JWT (JJWT 库)
+
+### 1. 引入依赖（注意版本，当前使用 0.11.5）
+```xml
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.11.5</version>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-impl</artifactId>
+    <version>0.11.5</version>
+    <scope>runtime</scope>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-jackson</artifactId>
+    <version>0.11.5</version>
+    <scope>runtime</scope>
+</dependency>
+```
+
+### 2. 编写 JwtUtil 工具类
+```java
+public class JwtUtil {
+    // 密钥：HS256 要求至少 32 个字符（256 bits）
+    private static final String SECRET_KEY = "BookManagerSecretKeyForJwtToken1234567890ABCDEFGHIJ";
+    private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 24小时
+
+    // 生成 Token
+    public static String generateToken(Integer userId, String username) {
+        return Jwts.builder()
+                .claim("userId", userId)
+                .claim("username", username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .compact();
+    }
+
+    // 解析 Token
+    public static Claims parseToken(String token) {
+        try {
+            return Jwts.parser()
+                    .setSigningKey(SECRET_KEY)
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            return null; // 过期或篡改
+        }
+    }
+}
+```
+
+### 3. 改造登录接口
+```java
+// UserService.java
+public String login(User user) {
+    User dbUser = userMapper.findByUsername(user.getUsername());
+    if (dbUser == null) return "用户不存在";
+    if (!dbUser.getPassword().equals(user.getPassword())) return "密码错误";
+
+    // 登录成功，返回 JWT 字符串
+    return JwtUtil.generateToken(dbUser.getId(), dbUser.getUsername());
+}
+```
+
+---
+
+## 三、Claims 对象的使用
+
+`Claims` 就是 Token 解密后里面的数据（Payload），本质上是一个 Map。
+```java
+Claims claims = JwtUtil.parseToken(token);
+Integer userId = claims.get("userId", Integer.class);
+String username = claims.get("username", String.class);
+```
+
+---
+
+## 四、踩坑记录
+
+1. **方法过时/报红**：如果 `jjwt` 用的是 0.12.x 版本，`setSigningKey`、`parseClaimsJws` 等会报错，需换成 `verifyWith`、`parseSignedClaims`、`getPayload`。
+2. **密钥长度不足**：报 `The signing key's size is XXX bits...`，是因为 HS256 算法要求密钥字符串至少为 **32 个字符**，加长密钥即可。
+3. **测试工具**：可以将生成的 Token 粘贴到 [jwt.io](https://jwt.io/) 网站，直观查看解密后的数据。
+
+---
+
+## 五、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| 认证 | JWT 结构、无状态认证原理、防篡改签名机制 |
+| Spring | JJWT 依赖、JwtUtil 封装（生成/解析） |
+| 实战 | 改造登录接口返回真实 Token |
+---
