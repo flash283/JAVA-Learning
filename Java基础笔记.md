@@ -7090,3 +7090,93 @@ String username = claims.get("username", String.class);
 | Spring | JJWT 依赖、JwtUtil 封装（生成/解析） |
 | 实战 | 改造登录接口返回真实 Token |
 ---
+```markdown
+# JWT 拦截器实战笔记
+
+**日期：2026年11月3日**
+
+---
+
+## 一、拦截器改造流程
+
+把之前简单的“检查有没有 token”升级为“解析真实的 JWT”。
+
+### 1. 核心代码 (`LoginInterceptor.java`)
+
+```java
+public class LoginInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        // 1. 从请求头获取 Token
+        String token = request.getHeader("Authorization");
+        
+        // 2. 如果带了 "Bearer " 前缀，把它截掉
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7); 
+        }
+
+        // 3. 没带 Token，直接拦截返回 401
+        if (token == null || token.isEmpty()) {
+            response.setStatus(401);
+            return false;
+        }
+
+        // 4. 解析 Token
+        Claims claims = JwtUtil.parseToken(token);
+        if (claims == null) {
+            // Token 过期、被篡改或格式错误
+            response.setStatus(401);
+            return false;
+        }
+
+        // 5. 校验成功，把用户信息存到 request 中，供 Controller 使用
+        Integer userId = claims.get("userId", Integer.class);
+        request.setAttribute("userId", userId);
+
+        return true; // 放行
+    }
+}
+```
+
+---
+
+## 二、核心方法解析
+
+### 1. `request.getHeader("Authorization")`
+*   **作用**：获取 HTTP 请求头里指定的值。
+*   **为什么叫这个名字**：`Authorization` 是 HTTP 标准中约定的传递身份凭证的请求头字段。它只返回冒号后面的值（如 `"Bearer eyJ..."`），不包含 Key 本身。
+
+### 2. `token.substring(7)`
+*   **作用**：截取字符串。
+*   **为什么是 7**：因为 `"Bearer "` 刚好占 7 个字符（B-e-a-r-e-r-空格）。截取后剩下的就是纯 JWT 字符串。
+
+### 3. `request.setAttribute("userId", userId)`
+*   **作用**：把解析出来的用户 ID 存到当前请求的“背包”里。
+*   **后续怎么用**：在 Controller 里可以通过 `request.getAttribute("userId")` 取出来，或者封装到 `ThreadLocal` 里供整个线程使用。
+
+### 4. `response.setStatus(401)`
+*   **作用**：设置 HTTP 响应状态码为 `401 Unauthorized`。
+*   **前端收到 401 会怎么做**：前端通常会全局拦截 401 状态码，一旦发现，立即清除本地存储的 Token，并强制跳转到登录页面。
+
+---
+
+## 三、测试验证结果
+
+| 测试场景 | Header 内容 | 预期结果 | 实际结果 |
+| :--- | :--- | :--- | :--- |
+| 不带 Token | 空 | 401 拦截 | ✅ 401 Unauthorized |
+| 带假 Token | `Authorization: 123` | 401 拦截 | ✅ 401 Unauthorized |
+| 带真 Token (加前缀) | `Authorization: Bearer eyJ...` | 200 成功放行 | ✅ 返回图书列表 |
+| 带真 Token (不加前缀) | `Authorization: eyJ...` | 200 成功放行 | ✅ 返回图书列表 |
+
+---
+
+## 四、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| 认证 | 拦截器解析 JWT、验证签名和过期时间 |
+| HTTP | `Authorization` Header 规范、`Bearer` 前缀处理 |
+| Spring | `request.setAttribute` 在同一次请求中传递数据 |
+| 规范 | 未授权一律返回 401 状态码供前端统一处理 |
+---
