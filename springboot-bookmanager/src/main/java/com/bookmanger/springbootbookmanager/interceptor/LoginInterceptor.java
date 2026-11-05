@@ -1,6 +1,7 @@
 package com.bookmanger.springbootbookmanager.interceptor;
 
 import com.bookmanger.springbootbookmanager.common.JwtUtil;
+import com.bookmanger.springbootbookmanager.exception.NotLoginException;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,15 +16,12 @@ public class LoginInterceptor implements HandlerInterceptor {
             token=token.substring(7);
         }
 
-        if(token==null || token.isEmpty()){
-            response.setStatus(401);
-            return false;
+        if (token == null || token.isEmpty()) {
+            throw new NotLoginException("未登录，请先登录");
         }
-
-        Claims claims= JwtUtil.parseToken(token);
-        if(claims==null){
-            response.setStatus(401);
-            return false;
+        Claims claims = JwtUtil.parseToken(token);
+        if (claims == null) {
+            throw new NotLoginException("登录已过期，请重新登录");
         }
 
         Integer userId=claims.get("userId",Integer.class);

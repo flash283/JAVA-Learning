@@ -7180,3 +7180,77 @@ public class LoginInterceptor implements HandlerInterceptor {
 | Spring | `request.setAttribute` 在同一次请求中传递数据 |
 | 规范 | 未授权一律返回 401 状态码供前端统一处理 |
 ---
+好，去测完并且 push 之后，下面是今天的完整笔记：
+
+```markdown
+# JWT 认证进阶与全局异常笔记
+
+**日期：2026年11月4日**
+
+---
+
+## 一、拦截器返回标准 JSON（结合全局异常）
+
+### 1. 痛点
+原生的拦截器直接写 `response.setStatus(401)`，前端只能收到一个干瘪的 HTTP 状态码，没有提示信息。
+
+### 2. 解决方案：抛出自定义异常
+让拦截器抛出异常，交给 Spring 的全局异常处理器（`@RestControllerAdvice`）去统一包装成 JSON 返回。
+
+**第一步：定义 `NotLoginException`**
+```java
+public class NotLoginException extends RuntimeException {
+    public NotLoginException(String message) {
+        super(message);
+    }
+}
+```
+
+**第二步：全局异常处理类拦截**
+```java
+@ExceptionHandler(NotLoginException.class)
+public Result<String> handleNotLoginException(NotLoginException e) {
+    // 返回统一的 JSON 格式，并在 code 字段标明 401
+    return new Result<>(401, e.getMessage(), null);
+}
+```
+
+**第三步：拦截器修改**
+```java
+if (token == null || token.isEmpty()) {
+    throw new NotLoginException("未登录，请先登录");
+}
+Claims claims = JwtUtil.parseToken(token);
+if (claims == null) {
+    throw new NotLoginException("登录已过期，请重新登录");
+}
+```
+
+---
+
+## 二、JWT 认证的进阶面试题
+
+### 1. Token 过期了怎么办？（双 Token 机制）
+JWT 一旦签发，在过期前是无法修改的。如果 Token 有效期很长，不安全；有效期太短，用户老是要重新登录。
+*   **双 Token 方案**：
+  1. 登录时发两个 Token：**AccessToken**（短效，如 30 分钟）和 **RefreshToken**（长效，如 7 天）。
+  2. 平时用 AccessToken 访问接口。
+  3. 当 AccessToken 过期报 401 时，前端用 RefreshToken 去请求专门的重发接口，换取新的 AccessToken，用户无感知。
+
+### 2. 如何实现“单点登录 / 踢人下线”？
+因为 JWT 是**无状态**的，服务器发出去就不管了，所以光靠 JWT 无法做到“让某个 Token 提前失效”。
+*   **解决方案**：结合 Redis。
+  1. 用户登录生成 JWT 后，把 JWT 存入 Redis，Key 为 `login:token:userId`。
+  2. 拦截器除了校验 JWT 的签名，还要去 Redis 查一下这个 Token 是否还在。
+  3. 如果在另一台设备登录，Redis 里的 Token 被覆盖，旧设备的 Token 就失效了（被踢下线）。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Spring | 结合 `@RestControllerAdvice` 实现拦截器全局异常返回 |
+| 认证 | 双 Token 机制解决 Token 过期用户体验问题 |
+| 认证 | JWT + Redis 解决 JWT 无状态带来的“无法踢人”问题 |
+---

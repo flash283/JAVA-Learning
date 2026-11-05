@@ -19,4 +19,9 @@ public class GlobalException {
     public Result<String> handleException(Exception e) {
         return Result.error("服务器异常：" + e.getMessage());
     }
+
+    @ExceptionHandler(NotLoginException.class)
+    public Result<String> handleNotLoginException(NotLoginException e){
+        return new Result<>(401,e.getMessage(),null);
+    }
 }
