@@ -7422,3 +7422,110 @@ java -jar springboot-bookmanager-0.0.1-SNAPSHOT.jar
 | 数据库 | `auth_socket` 认证机制，专属应用用户创建 |
 | 部署 | 跨系统传包、`java -jar` 运行、JWT全链路测试 |
 ---
+```markdown
+# Docker 容器化入门笔记
+
+**日期：2026年11月7日**
+
+---
+
+## 一、Docker 是什么
+
+Docker 是一个轻量级的容器化技术。它把代码和运行环境（JDK、MySQL等）打包在一起，实现**“一次打包，到处运行”**，彻底解决“在我的电脑上能跑，在服务器上跑不了”的问题。
+
+### 三大核心概念
+| 概念 | 比喻 | 说明 |
+|------|------|------|
+| **镜像（Image）** | 游戏安装包 | 只读模板，包含运行环境 |
+| **容器（Container）** | 正在运行的游戏 | 镜像启动后的实例，互相隔离 |
+| **仓库（Registry）** | 应用商店 | 存放镜像的地方（如 Docker Hub） |
+
+---
+
+## 二、国内网络环境配置（镜像加速）
+
+由于国内直连 Docker Hub 极慢且容易报 `connection refused`，必须配置国内镜像加速器。
+
+1. 修改配置文件：
+```bash
+sudo nano /etc/docker/daemon.json
+```
+2. 写入国内加速地址：
+```json
+{
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io",
+    "https://docker.1ms.run",
+    "https://docker.xuanyuan.me"
+  ]
+}
+```
+3. 重启 Docker 生效：
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+4. 验证：执行 `docker info`，看到 `Registry Mirrors` 包含上述地址即成功。
+
+---
+
+## 三、Docker 核心命令
+
+### 1. 容器生命周期管理
+| 命令 | 作用 |
+|------|------|
+| `docker run [参数] 镜像名` | 启动容器（新建并运行） |
+| `docker ps` | 查看正在运行的容器 |
+| `docker ps -a` | 查看所有容器（含停止的） |
+| `docker stop 容器名` | 停止容器 |
+| `docker start 容器名` | 启动已停止的容器 |
+| `docker rm 容器名` | 删除容器 |
+
+### 2. 镜像查看
+| 命令 | 作用 |
+|------|------|
+| `docker images` | 查看本地已下载的镜像 |
+| `docker info` | 查看 Docker 系统信息及加速器 |
+
+---
+
+## 四、实战：用 Docker 跑 MySQL
+
+### 启动命令
+```bash
+docker run -d --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD='Ldp1704110!' -e MYSQL_DATABASE=mydb mysql:8.0
+```
+
+### 参数拆解
+*   `-d`：后台运行。
+*   `--name`：给容器起名。
+*   `-p 3306:3306`：端口映射（宿主机端口:容器端口）。
+*   `-e`：设置环境变量（自动设密码、建库）。
+*   `mysql:8.0`：指定镜像和版本。
+
+### 连接 Docker 内的 MySQL
+由于数据库在容器内，直接 `mysql -u root -p` 会找不到本地 socket 文件，必须通过 TCP 协议连接：
+```bash
+mysql -h 127.0.0.1 -u root -p
+```
+
+---
+
+## 五、踩坑记录
+
+1.  **网络报错 `Could not resolve host`**：WSL 的 DNS 解析问题，放弃 `curl` 脚本，直接用 `sudo apt install docker.io -y` 安装。
+2.  **拉取镜像报错 `connection refused`**：被墙，配置国内镜像加速器解决。
+3.  **端口冲突 `address already in use`**：宿主机原有的 MySQL 占用了 3306，执行 `sudo service mysql stop` 停掉旧服务，或用 `docker rm` 删掉冲突容器重试。
+4.  **连接报错 `Can't connect through socket`**：Docker 容器必须走 TCP 连，加 `-h 127.0.0.1`。
+
+---
+
+## 六、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Docker | 镜像、容器、仓库三大概念 |
+| Docker | 国内镜像加速配置（daemon.json） |
+| Docker | `run`、`ps`、`rm`、`stop` 等核心命令 |
+| 实战 | 用 Docker 秒级启动 MySQL 并连通项目 |
+---
