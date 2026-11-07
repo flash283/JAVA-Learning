@@ -7327,3 +7327,98 @@ Windows Subsystem for Linux 2，微软官方提供的 Linux 子系统。可以�
 ## 四、遇到报错怎么处理
 *   如果敲错命令提示 `Command 'xxx' not found`，通常是因为拼写错误，或者你还没安装对应的软件（系统往往会智能提示你正确的命令，比如把 `ppwd` 提示成了 `pwd`）。
 ---
+```markdown
+# Linux 项目部署实战笔记
+
+**日期：2026年11月6日**
+
+---
+
+## 一、Linux 环境准备
+
+### 1. 安装 JDK
+```bash
+sudo apt update
+sudo apt install openjdk-25-jdk -y
+java -version
+```
+
+### 2. 安装并启动 MySQL
+```bash
+sudo apt install mysql-server -y
+sudo service mysql start
+```
+
+### 3. 安装并启动 Redis
+```bash
+sudo apt install redis-server -y
+sudo service redis-server start
+redis-cli ping  # 返回 PONG 即成功
+```
+
+---
+
+## 二、MySQL 8.4 的重大踩坑与解决
+
+### 1. 为什么 `mysql -u root -p` 会报 1698 错误？
+**原因**：Ubuntu 系统安装的 MySQL，默认给 `root` 用户使用了 `auth_socket` 认证插件。它不看密码，只认“你是不是用 `sudo` 进来的系统管理员”。
+
+### 2. 为什么 `mysql_native_password` 会报错？
+**原因**：MySQL 8.4 版本彻底移除了这个旧插件，不能再强制指定它。
+
+### 3. 终极解决方案：创建专属应用用户（企业级规范）
+既然 root 登不上，且不能给程序用 root 连，就直接建一个专属用户。
+```bash
+# 1. 免密进去
+sudo mysql
+
+# 2. 在 mysql> 里执行：
+CREATE USER 'appuser'@'localhost' IDENTIFIED BY '你的密码';
+GRANT ALL PRIVILEGES ON mydb.* TO 'appuser'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+**好处**：解决了密码登录问题，同时遵循了生产环境“最小权限原则”。
+
+---
+
+## 三、项目打包与部署全链路
+
+### 1. 打包
+在 Windows IDEA 的 Maven 面板点击 `package`（跳过测试），在 `target` 目录生成 `.jar` 文件。
+
+### 2. 传文件
+在 Windows 资源管理器地址栏输入：`\\wsl$\Ubuntu\home\lenovo`，把 jar 包粘贴进去。
+
+### 3. 修改配置
+Windows 项目中的 `application.properties` 数据库账号密码，要改成刚创建的 `appuser` 及其密码。然后**必须重新打包**上传。
+
+### 4. 运行
+```bash
+cd ~
+java -jar springboot-bookmanager-0.0.1-SNAPSHOT.jar
+```
+看到 `Tomcat started on port 8080` 即启动成功。
+
+---
+
+## 四、Linux 常用运维命令
+
+| 命令 | 作用 |
+|------|------|
+| `Ctrl + C` | 停止当前终端的前台程序 |
+| `nohup java -jar xxx.jar &` | 让程序在后台运行（关终端不退出） |
+| `ps -ef \| grep java` | 查系统里有没有 Java 进程 |
+| `kill -9 进程号` | 强制杀掉指定进程 |
+| `TRUNCATE TABLE 表名;` | 清空数据库表内容并重置自增ID |
+
+---
+
+## 五、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Linux | 环境搭建（JDK + MySQL 8.4 + Redis） |
+| 数据库 | `auth_socket` 认证机制，专属应用用户创建 |
+| 部署 | 跨系统传包、`java -jar` 运行、JWT全链路测试 |
+---
