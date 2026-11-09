@@ -7528,4 +7528,111 @@ mysql -h 127.0.0.1 -u root -p
 | Docker | 国内镜像加速配置（daemon.json） |
 | Docker | `run`、`ps`、`rm`、`stop` 等核心命令 |
 | 实战 | 用 Docker 秒级启动 MySQL 并连通项目 |
+----
+```markdown
+# Docker 进阶：项目容器化与多容器通信
+
+**日期：2026年11月8日**
+
+---
+
+## 一、核心概念再理解
+
+### 1. Dockerfile 是什么？
+`Dockerfile` 是一份**“自动组装说明书”**（纯文本文件）。它告诉 Docker 如何一步步把你的代码和环境打包成镜像。
+*   **镜像（Image）**：按照说明书组装好的“半成品集装箱”。
+*   **容器（Container）**：把集装箱真正开上路（跑起来）。
+
+### 2. Docker 怎么读取 Dockerfile？
+当你执行 `docker build -t 镜像名 .` 时（注意最后面的 `.` 代表当前目录），Docker 会自动寻找当前目录下名为 `Dockerfile` 的文件，并从上到下逐行执行里面的指令。
+
+---
+
+## 二、实战：把 Spring Boot 项目打包成镜像
+
+### 1. 编写 Dockerfile
+在项目根目录新建 `Dockerfile`（无后缀）：
+
+```dockerfile
+# 1. 基础运行环境：使用轻量级 JDK 25
+FROM eclipse-temurin:25-jre-alpine
+
+# 2. 设置容器内的工作目录
+WORKDIR /app
+
+# 3. 把宿主机上的 jar 包复制进容器并重命名
+COPY target/springboot-bookmanager-0.0.1-SNAPSHOT.jar app.jar
+
+# 4. 暴露容器的 8080 端口
+EXPOSE 8080
+
+# 5. 容器启动时执行的命令
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+### 2. 构建镜像
+进入项目目录，执行：
+```bash
+docker build -t my-book-app:v1 .
+```
+*(构建成功后，通过 `docker images` 可以看到 `my-book-app:v1`)*
+
+---
+
+## 三、多容器网络通信（核心重点）
+
+### 1. 容器内的 `localhost` 陷阱
+在 Docker 中，每个容器都是独立的隔离环境。如果你在 `application.properties` 里写 `localhost:3306`，Spring Boot 会去找**它自己容器内部**的 3306 端口，而不是外面的 MySQL。
+
+### 2. 解决方案：自定义网络 + 容器名访问
+1. **创建网络**：
+   ```bash
+   docker network create my-net
+   ```
+2. **启动容器时加入网络**：
+   ```bash
+   # MySQL
+   docker run -d --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD='密码' -e MYSQL_DATABASE=mydb --network my-net mysql:8.0
+   # Redis
+   docker run -d --name redis-docker -p 6379:6379 --network my-net redis
+   # Spring Boot 应用
+   docker run -d --name book-app -p 8080:8080 --network my-net my-book-app:v1
+   ```
+3. **修改项目配置指向容器名**：
+   ```properties
+   spring.datasource.url=jdbc:mysql://mysql-docker:3306/mydb?serverTimezone=Asia/Shanghai
+   spring.data.redis.host=redis-docker
+   ```
+
+---
+
+## 四、排坑与常用命令
+
+### 1. 端口冲突
+**报错**：`failed to bind host port 0.0.0.0:3306/tcp: address already in use`
+**解决**：宿主机自带的 MySQL 占用了端口。执行 `sudo service mysql stop` 停掉它，再启动 Docker。
+
+### 2. 容器反复重建（环境重置）
+如果环境乱了，直接一套带走，重新建：
+```bash
+docker rm -f book-app mysql-docker redis-docker
+```
+
+### 3. 常用运维命令
+| 命令 | 作用 |
+|------|------|
+| `docker ps` | 查看正在运行的容器（必须全是 Up 状态） |
+| `docker ps -a` | 查看所有容器（包括挂掉的） |
+| `docker logs -f book-app` | 实时查看项目的日志（排错神技） |
+| `docker images` | 查看本地已有的镜像 |
+
+---
+
+## 五、今日总结
+| 分类 | 内容 |
+|------|------|
+| Docker | Dockerfile 语法、`build` 构建镜像 |
+| 架构 | 自定义网络（`my-net`）让多容器互联 |
+| 配置 | 容器间通信必须用容器名代替 `localhost` |
+| 部署 | 真正的企业级一键部署全流程打通 |
 ---
