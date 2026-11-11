@@ -7636,3 +7636,81 @@ docker rm -f book-app mysql-docker redis-docker
 | 配置 | 容器间通信必须用容器名代替 `localhost` |
 | 部署 | 真正的企业级一键部署全流程打通 |
 ---
+```markdown
+# Docker 进阶（二）：Compose 编排与核心概念
+
+**日期：2026年11月10日**
+
+---
+
+## 一、镜像（Image）到底是什么？
+
+在 Docker 中，**镜像就是一个只读的“超级压缩包”或“系统安装光盘”**。它包含了运行程序所需的一切：操作系统、环境（如 JDK）、你的代码。
+
+*   **对比**：
+    *   **镜像（Image）** = **“类”** / **“安装包”**。静态存在硬盘里，不占用运行资源。
+    *   **容器（Container）** = **“对象”** / **“运行的程序”**。镜像是模具，容器是印出来的月饼。
+
+---
+
+## 二、Docker Compose 一键编排
+
+之前我们启动项目，需要敲三行长长的 `docker run`（起 MySQL、起 Redis、起项目），还要建网络。
+`Docker Compose` 允许我们把这些命令写在一个 `docker-compose.yml` 配置文件里，实现**一键启动所有服务**。
+
+### 1. Compose 文件的核心结构
+
+```yaml
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0       # 使用现成的官方镜像
+    environment:
+      MYSQL_ROOT_PASSWORD: Ldp1704110!
+      MYSQL_DATABASE: mydb
+    ports:
+      - "3306:3306"
+    networks:
+      - my-net
+
+  book-app:
+    build: .               # 不用网上的镜像，直接用当前目录的 Dockerfile 现场构建
+    ports:
+      - "8080:8080"
+    networks:
+      - my-net
+
+networks:
+  my-net:
+```
+
+### 2. `image` 和 `build` 的区别
+*   **`image: mysql:8.0`**：去仓库（默认是 Docker Hub，或者你配置的国内加速器）直接拉取别人做好的镜像。
+*   **`build: .`**：告诉 Docker 别去网上下载，直接读取当前目录下的 `Dockerfile`，现场把代码和环境打包成镜像。
+
+---
+
+## 三、镜像从哪里来？（仓库概念）
+
+Docker 镜像默认存放在 **Docker Hub**（官方应用商店）。
+因为国内网络限制，通常需要配置**镜像加速器**（如 DaoCloud、阿里云），让 Docker 从国内的服务器下载镜像，解决拉取失败或极慢的问题。
+
+---
+
+## 四、11月知识大复盘（核心考点）
+
+1.  **JWT**：包含 Header、Payload、Signature 三部分。靠签名防篡改，服务器不用存状态。
+2.  **拦截器**：从 Header 获取 Token，解析出 UserId 存入 request 中，校验失败抛异常返回 401。
+3.  **Linux**：会用 `ps -ef | grep java` 找进程，用 `kill -9` 杀进程，会用 `nohup` 后台启动项目。
+4.  **Docker 容器间通信**：必须加入同一个自定义网络（如 `my-net`），且配置文件里的 `localhost` 必须换成**容器名**（如 `mysql-docker`）。
+
+---
+
+## 五、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Docker | 镜像本质、Compose 一键编排概念 |
+| 概念 | 镜像（类）与容器（对象）的关系 |
+| 复习 | 11 月核心内容串联（JWT / Linux / Docker） |
+---
