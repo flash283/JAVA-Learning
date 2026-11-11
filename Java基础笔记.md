@@ -7714,3 +7714,64 @@ Docker 镜像默认存放在 **Docker Hub**（官方应用商店）。
 | 概念 | 镜像（类）与容器（对象）的关系 |
 | 复习 | 11 月核心内容串联（JWT / Linux / Docker） |
 ---
+```markdown
+# Spring Boot 跨域与 HTTP 协议深度笔记
+
+**日期：2026年11月11日**
+
+---
+
+## 一、跨域问题（CORS）的本质
+
+### 1. 同源策略
+浏览器为了安全，规定只有“协议 + 域名 + 端口”完全一致的请求才允许互相访问。
+*   前端：`http://localhost:5173`
+*   后端：`http://localhost:8080`
+因为端口不同，浏览器会拦截，这就是**跨域问题**。
+
+### 2. 解决方案
+在 `WebConfig` 中配置全局跨域：
+```java
+@Override
+public void addCorsMappings(CorsRegistry registry) {
+    registry.addMapping("/**") 
+            .allowedOriginPatterns("*") // 允许所有前端来源
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            .allowedHeaders("*") 
+            .allowCredentials(true) 
+            .maxAge(3600); 
+}
+```
+
+---
+
+## 二、HTTP 协议与 OPTIONS 预检请求
+
+### 1. Header（请求头/响应头）是什么？
+Header 是包裹上的“快递单”，传递附加信息（不包含业务数据本身）。
+*   **请求头（Request Headers）**：告诉服务器我是谁、我要什么（如 `Origin`、`Authorization`、`Content-Type`）。
+*   **响应头（Response Headers）**：告诉浏览器服务器的规矩（如 `Access-Control-Allow-Origin`、`Content-Length`）。
+
+### 2. OPTIONS 请求是干嘛的？（酒吧保安比喻）
+当浏览器发送复杂请求（如带 Token 的 PUT/DELETE）时，由于同源策略，浏览器会先替客户端发一个 **`OPTIONS` 请求（预检请求）** 去探口风。
+
+*   **OPTIONS 的作用**：询问服务器“我能不能跨域？我能不能带 Token？”。
+*   **为什么没 Body**：它只负责安检问话，不携带业务数据（如查书的 JSON），所以 `Content-Length: 0`。
+*   **返回的 Header**：服务器如果同意，会在响应头里返回 `Access-Control-Allow-Origin` 等通行证。
+*   只有在 `OPTIONS` 请求通过后，浏览器才会真正把带有业务数据的真实请求（如 POST 注册）发出去。
+
+### 3. 测试跨域的坑点
+用 Postman/Apifox 测跨域时，如果直接发请求，因为没有模拟“网页”，服务器不会返回跨域响应头。
+**正确测法**：手动在 Header 里加上 `Origin: http://localhost:5173`，再看响应头里有没有 `Access-Control-Allow-Origin`。
+
+---
+
+## 三、今日总结
+
+| 分类 | 内容 |
+|------|------|
+| Web 安全 | 同源策略、CORS 跨域机制 |
+| HTTP | Header 请求头与响应头的作用 |
+| 协议 | OPTIONS 预检请求的触发条件与意义 |
+| Spring | `WebMvcConfigurer` 跨域配置及拦截器放行 OPTIONS |
+---
