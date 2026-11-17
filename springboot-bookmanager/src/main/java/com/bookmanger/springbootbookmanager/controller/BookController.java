@@ -38,7 +38,7 @@ public class BookController {
     @PostMapping
     public Result<String> addBook(@Valid @RequestBody Book book) {
         bookService.addBook(book);
-        return Result.success("添加成功");
+        return Result.success();
     }
 
     // 修改
@@ -54,7 +54,7 @@ public class BookController {
     @DeleteMapping("/{id}")
     public Result<String> deleteBook(@PathVariable int id) {
         if (bookService.deleteBook(id)) {
-            return Result.success("删除成功");
+            return Result.success();
         }
         return Result.error("删除失败");
     }

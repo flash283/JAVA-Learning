@@ -7327,7 +7327,7 @@ Windows Subsystem for Linux 2，微软官方提供的 Linux 子系统。可以�
 ## 四、遇到报错怎么处理
 *   如果敲错命令提示 `Command 'xxx' not found`，通常是因为拼写错误，或者你还没安装对应的软件（系统往往会智能提示你正确的命令，比如把 `ppwd` 提示成了 `pwd`）。
 ---
-```markdown
+
 # Linux 项目部署实战笔记
 
 **日期：2026年11月6日**
@@ -7422,7 +7422,7 @@ java -jar springboot-bookmanager-0.0.1-SNAPSHOT.jar
 | 数据库 | `auth_socket` 认证机制，专属应用用户创建 |
 | 部署 | 跨系统传包、`java -jar` 运行、JWT全链路测试 |
 ---
-```markdown
+
 # Docker 容器化入门笔记
 
 **日期：2026年11月7日**
@@ -7529,7 +7529,7 @@ mysql -h 127.0.0.1 -u root -p
 | Docker | `run`、`ps`、`rm`、`stop` 等核心命令 |
 | 实战 | 用 Docker 秒级启动 MySQL 并连通项目 |
 ----
-```markdown
+
 # Docker 进阶：项目容器化与多容器通信
 
 **日期：2026年11月8日**
@@ -7636,7 +7636,7 @@ docker rm -f book-app mysql-docker redis-docker
 | 配置 | 容器间通信必须用容器名代替 `localhost` |
 | 部署 | 真正的企业级一键部署全流程打通 |
 ---
-```markdown
+
 # Docker 进阶（二）：Compose 编排与核心概念
 
 **日期：2026年11月10日**
@@ -7714,7 +7714,7 @@ Docker 镜像默认存放在 **Docker Hub**（官方应用商店）。
 | 概念 | 镜像（类）与容器（对象）的关系 |
 | 复习 | 11 月核心内容串联（JWT / Linux / Docker） |
 ---
-```markdown
+
 # Spring Boot 跨域与 HTTP 协议深度笔记
 
 **日期：2026年11月11日**
@@ -7775,3 +7775,69 @@ Header 是包裹上的“快递单”，传递附加信息（不包含业务数�
 | 协议 | OPTIONS 预检请求的触发条件与意义 |
 | Spring | `WebMvcConfigurer` 跨域配置及拦截器放行 OPTIONS |
 ---
+
+这份 README 已经非常完美了！排版干净，技术栈准确，亮点突出，快速启动的步骤也完全符合你现在的实际操作流程。直接把它提交到 GitHub 上就行，绝对能给面试官留下极好的印象。
+
+---
+
+### 今日完成清单
+
+| 任务 | 状态 |
+|------|------|
+| 理解 RESTful API 规范 | ✅ |
+| 完善 `Result` 统一返回类 | ✅ |
+| README 终极升级（加 JWT、Redis、Docker 亮点） | ✅ |
+
+---
+
+
+
+# RESTful 规范与项目包装笔记
+
+**日期：2026年11月17日**
+
+---
+
+## 一、RESTful API 设计规范
+
+### 1. 核心思想
+**用 URL 定位资源（名词），用 HTTP 方法定义操作（动词）。**
+
+| 操作 | 传统不规范写法 | RESTful 规范写法 | HTTP 方法 |
+|------|------|------|------|
+| 查询所有 | `/api/getAllBooks` | `/api/books` | GET |
+| 查询单个 | `/api/getBook?id=1` | `/api/books/1` | GET |
+| 新增 | `/api/addBook` | `/api/books` | POST |
+| 修改 | `/api/updateBook` | `/api/books/1` | PUT |
+| 删除 | `/api/deleteBook?id=1` | `/api/books/1` | DELETE |
+
+### 2. 本项目实践
+*   URL 保持 `/api/books`，通过 `GET/POST/PUT/DELETE` 决定操作。
+*   状态码规范：成功返回 `200`，未登录返回 `401`，服务器错误返回 `500`。
+
+---
+
+## 二、`Result` 统一返回类优化
+
+为了让 Controller 代码更简洁，为 `Result` 增加了无参的 `success()` 和自定义错误码的 `error()`：
+
+```java
+// 成功且不带数据（用于删除、新增等操作）
+public static <T> Result<T> success() {
+    return new Result<>(200, "成功", null);
+}
+
+// 自定义状态码错误（用于 401 未授权）
+public static <T> Result<T> error(int code, String msg) {
+    return new Result<>(code, msg, null);
+}
+```
+
+---
+
+## 三、README 终极包装技巧
+
+在 README 中放大项目亮点，重点突出：
+1. **技术深度的展现**：写出“高并发缓存保护（穿透/击穿/雪崩）”、“JWT 无状态鉴权”。
+2. **工程化能力**：写出“Docker 容器化部署”、“隔离环境实现标准部署”。
+3. **清晰的快速启动指南**：列出 docker build 和 docker run 的标准流程。
